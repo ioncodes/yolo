@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <imgui/imgui_internal.h>
 #include <stdlib.h>
+#include <Commdlg.h>
+#include <Windows.h>
+#include <iostream>
 
 const int xres = 1280;
 const int yres = 720;
@@ -175,6 +178,63 @@ int main()
 		}
 
 		ImGui_ImplGlfwGL3_NewFrame();
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("Load Fragment", "CTRL+F"))
+				{
+					char filename[MAX_PATH];
+
+					OPENFILENAME ofn;
+					ZeroMemory(&filename, sizeof(filename));
+					ZeroMemory(&ofn, sizeof(ofn));
+					ofn.lStructSize = sizeof(ofn);
+					ofn.hwndOwner = NULL;
+					ofn.lpstrFilter = L"Fragment Shader\0*.frag\0Any File\0*.*\0";
+					size_t size = strlen(filename) + 1;
+					wchar_t* fragName = new wchar_t[size];
+					size_t outSize;
+					mbstowcs_s(&outSize, fragName, size, filename, size - 1);
+					ofn.lpstrFile = fragName;
+					ofn.nMaxFile = MAX_PATH;
+					ofn.lpstrTitle = L"Select a fragment shader!";
+					ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
+
+					if (GetOpenFileName(&ofn))
+					{
+						printf("Loading fragment shader '%ls'", fragName);
+						char chr_fragName[MAX_PATH];
+						size_t i;
+						wcstombs_s(&i, chr_fragName, MAX_PATH,
+							fragName, MAX_PATH);
+						FILE *f = fopen(chr_fragName, "rb");
+						fseek(f, 0, SEEK_END);
+						long fsize = ftell(f);
+						fseek(f, 0, SEEK_SET);  //same as rewind(f);
+
+						char *string = (char*)malloc(fsize + 1);
+						fread(string, fsize, 1, f);
+						fclose(f);
+
+						string[fsize] = 0;
+
+						glDeleteProgram(shaderProgram);
+						fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+						glShaderSource(fragmentShader, 1, &string, NULL);
+						glCompileShader(fragmentShader);
+						shaderProgram = glCreateProgram();
+						glAttachShader(shaderProgram, vertexShader);
+						glAttachShader(shaderProgram, fragmentShader);
+						glBindFragDataLocation(shaderProgram, 0, "outColor");
+						glLinkProgram(shaderProgram);
+						glUseProgram(shaderProgram);
+					}
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
 
 		// split into settings and variables
 		ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_FirstUseEver);

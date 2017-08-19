@@ -5,9 +5,11 @@
 #include <stdio.h>
 #include <imgui/imgui_internal.h>
 #include <stdlib.h>
+#include <iostream>
+#if _WIN32
 #include <Commdlg.h>
 #include <Windows.h>
-#include <iostream>
+#endif
 
 const int xres = 1280;
 const int yres = 720;

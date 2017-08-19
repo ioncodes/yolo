@@ -43,7 +43,7 @@ static void error_callback(int error, const char* description)
 	fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 	glfwSetErrorCallback(error_callback);
 	if (!glfwInit())
@@ -229,6 +229,29 @@ int main()
 						glLinkProgram(shaderProgram);
 						glUseProgram(shaderProgram);
 					}
+#endif
+#if __APPLE__
+					FILE *f = fopen(argv[1], "rb");
+					fseek(f, 0, SEEK_END);
+					long fsize = ftell(f);
+					fseek(f, 0, SEEK_SET);  //same as rewind(f);
+
+					char *string = (char*)malloc(fsize + 1);
+					fread(string, fsize, 1, f);
+					fclose(f);
+
+					string[fsize] = 0;
+
+					glDeleteProgram(shaderProgram);
+					fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+					glShaderSource(fragmentShader, 1, &string, NULL);
+					glCompileShader(fragmentShader);
+					shaderProgram = glCreateProgram();
+					glAttachShader(shaderProgram, vertexShader);
+					glAttachShader(shaderProgram, fragmentShader);
+					glBindFragDataLocation(shaderProgram, 0, "outColor");
+					glLinkProgram(shaderProgram);
+					glUseProgram(shaderProgram);
 #endif
 				}
 				ImGui::EndMenu();

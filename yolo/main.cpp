@@ -12,8 +12,8 @@
 #include <Windows.h>
 #endif
 
-const int xres = 1280;
-const int yres = 720;
+int xres = 1280;
+int yres = 720;
 
 const char *fragmentSource =
 "#version 330 core\n"
@@ -44,6 +44,15 @@ static void error_callback(int error, const char* description)
 	fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
+static void window_size_callback(GLFWwindow* window, int width, int height)
+{
+	printf("Resizing to %dx%d\n", width, height);
+	xres = width;
+	yres = height;
+	glfwSetWindowSize(window, width, height);
+	glViewport(0, 0, width, height);
+}
+
 int main(int argc, char* argv[])
 {
 	glfwSetErrorCallback(error_callback);
@@ -57,6 +66,7 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 	GLFWwindow* window = glfwCreateWindow(xres, yres, ".: yolo :.", NULL, NULL);
+	glfwSetWindowSizeCallback(window, window_size_callback);
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 	
@@ -68,7 +78,7 @@ int main(int argc, char* argv[])
 	const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
 	const GLubyte* version = glGetString(GL_VERSION); // version as a string
 	printf("Renderer: %s\n", renderer);
-	printf("OpenGL version supported %s\n", version);
+	printf("OpenGL version supported: %s\n", version);
 
 	ImGui_ImplGlfwGL3_Init(window, true);
 
@@ -131,17 +141,16 @@ int main(int argc, char* argv[])
 
 	float time = 0.0;
 	float time_speed = 0.01;
-	char chr_xres[32];
-	snprintf(chr_xres, sizeof chr_xres, "%f", (float)xres);
-	char chr_yres[32];
-	snprintf(chr_yres, sizeof chr_yres, "%f", (float)yres);
 	bool multisample = false;
 	bool smooth = false;
-
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
+		char chr_xres[32];
+		snprintf(chr_xres, sizeof chr_xres, "%f", (float)xres);
+		char chr_yres[32];
+		snprintf(chr_yres, sizeof chr_yres, "%f", (float)yres);
 		glfwPollEvents();
 		// set resolution
 		GLint loc = glGetUniformLocation(shaderProgram, "resolution");

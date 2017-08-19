@@ -184,6 +184,7 @@ int main()
 			{
 				if (ImGui::MenuItem("Load Fragment", "CTRL+F"))
 				{
+#if _WIN32
 					char filename[MAX_PATH];
 
 					OPENFILENAME ofn;
@@ -229,6 +230,7 @@ int main()
 						glBindFragDataLocation(shaderProgram, 0, "outColor");
 						glLinkProgram(shaderProgram);
 						glUseProgram(shaderProgram);
+#endif
 					}
 				}
 				ImGui::EndMenu();

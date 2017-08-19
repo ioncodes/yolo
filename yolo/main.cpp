@@ -14,33 +14,28 @@
 const int xres = 1280;
 const int yres = 720;
 
-char *fragmentSource = R"glsl(
-#version 330 core
+char *fragmentSource = 
+"#version 330 core"
+"uniform float time;"
+"uniform vec2 resolution;"
+"void main()"
+"{"
+    "vec2 r = resolution,"
+    "o = gl_FragCoord.xy - r/2.;"
+    "o = vec2(max(abs(o.x)*.866 + o.y*.5, -o.y)*2. / r.y - .3, atan(o.y,o.x));"    
+    "vec4 s = .07*cos(1.5*vec4(0,1,2,3) + time + o.y + time),"
+    "e = s.yzwx, "
+    "f = max(o.x-s,e-o.x);"
+    "gl_FragColor = dot(clamp(f*r.y,0.,1.), 72.*(s-e)) * (s-.1) + f;"
+	"}";
 
-uniform float time;
-uniform vec2 resolution;
-
-void main()
-{
-    vec2 r = resolution,
-    o = gl_FragCoord.xy - r/2.;
-	
-    o = vec2(max(abs(o.x)*.866 + o.y*.5, -o.y)*2. / r.y - .3, atan(o.y,o.x));    
-    vec4 s = .07*cos(1.5*vec4(0,1,2,3) + time + o.y + time),
-    e = s.yzwx, 
-    f = max(o.x-s,e-o.x);
-    gl_FragColor = dot(clamp(f*r.y,0.,1.), 72.*(s-e)) * (s-.1) + f;
-}
-)glsl";
-
-const GLchar* vertexSource = R"glsl(
-    #version 330 core
-    in vec2 position;
-    void main()
-    {
-        gl_Position = vec4(position, 0.0, 1.0);
-    }
-)glsl";
+const GLchar* vertexSource =
+"#version 330 core"
+"in vec2 position;"
+"void main()"
+"{"
+"gl_Position = vec4(position, 0.0, 1.0);"
+"}";
 
 static void error_callback(int error, const char* description)
 {

@@ -228,9 +228,31 @@ void load_uniforms_from_file()
 	}
 }
 
+void reload_fragment_shader_from_file()
+{
+	FILE *f;
+	fopen_s(&f, fragPath, "rb");
+	fseek(f, 0, SEEK_END);
+	long fsize = ftell(f);
+	rewind(f);
+
+	char *string = (char*)malloc(fsize + 1);
+	fread(string, fsize, 1, f);
+	fclose(f);
+
+	string[fsize] = 0;
+	reload_fragment_shader(string);
+}
+
+// doesnt work?
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (action && key == 'L' && (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL)))
+		load_fragmentshader_from_file();
+}
+
 int main(int argc, char* argv[])
 {
-	glfwSetErrorCallback(error_callback);
 	if (!glfwInit())
 		return 1;
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -241,7 +263,10 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 	GLFWwindow* window = glfwCreateWindow(xres, yres, ".: yolo :.", NULL, NULL);
+	//glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
+	//glfwSetKeyCallback(window, key_callback); // doesnt work
 	glfwSetWindowSizeCallback(window, window_size_callback);
+	glfwSetErrorCallback(error_callback);
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 	
@@ -279,6 +304,19 @@ int main(int argc, char* argv[])
 	{
 		glfwPollEvents();
 
+		if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_F))
+		{
+			load_fragmentshader_from_file();
+		}
+		else if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_U))
+		{
+			load_uniforms_from_file();
+		}
+		else if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_R))
+		{
+			reload_fragment_shader_from_file();
+		}
+
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		if (ImGui::BeginMainMenuBar())
@@ -295,18 +333,7 @@ int main(int argc, char* argv[])
 				}
 				if(ImGui::MenuItem("Reload Fragment", "CTRL+R"))
 				{
-					FILE *f;
-					fopen_s(&f, fragPath, "rb");
-					fseek(f, 0, SEEK_END);
-					long fsize = ftell(f);
-					rewind(f);
-
-					char *string = (char*)malloc(fsize + 1);
-					fread(string, fsize, 1, f);
-					fclose(f);
-
-					string[fsize] = 0;
-					reload_fragment_shader(string);
+					reload_fragment_shader_from_file();
 				}
 				ImGui::EndMenu();
 			}

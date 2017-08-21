@@ -5,10 +5,13 @@
 #include <stdio.h>
 #include <imgui/imgui_internal.h>
 #include <stdlib.h>
-#include <iostream>
+#include <bass/bass.h>
 #include <vector>
 #include <nativefiledialog/nfd.h>
 #include "json.hpp"
+
+#define SPECWIDTH 368
+#define SPECHEIGHT 127
 
 int xres = 1280;
 int yres = 720;
@@ -57,6 +60,10 @@ std::vector<Uniform> uniforms;
 char chr_xres[32];
 char chr_yres[32];
 char *fragPath;
+HSTREAM streamHandle;
+bool preciseSpectrum = true;
+bool playMusic = false;
+float volume = 1.0;
 
 static void error_callback(int error, const char* description)
 {
@@ -202,7 +209,7 @@ char* load_file(char *extensions)
 			fragPath = (char*)outPath;
 		return string;
 	}
-	return 0; // todo: replace this with something appropriate
+	return NULL; // todo: replace this with something appropriate
 }
 
 void load_fragmentshader_from_file()
@@ -214,17 +221,24 @@ void load_fragmentshader_from_file()
 void load_uniforms_from_file()
 {
 	char *chr_uniforms = load_file("json");
-	auto _uniforms = json::parse(chr_uniforms);
-	for(int i = 0; i < _uniforms.size(); i++)
+	if(chr_uniforms == NULL)
 	{
-		Uniform uniform;
-		uniform.name = _uniforms[i]["name"].get<std::string>();
-		uniform.value = _uniforms[i]["value"].get<float>();
-		uniform.speed = _uniforms[i]["speed"].get<float>();
-		uniform.min = _uniforms[i]["min"].get<float>();
-		uniform.max = _uniforms[i]["max"].get<float>();
-		uniform.type = _uniforms[i]["type"].get<std::string>();
-		uniforms.push_back(uniform);
+		printf("error loading uniforms");
+	}
+	else
+	{
+		auto _uniforms = json::parse(chr_uniforms);
+		for (int i = 0; i < _uniforms.size(); i++)
+		{
+			Uniform uniform;
+			uniform.name = _uniforms[i]["name"].get<std::string>();
+			uniform.value = _uniforms[i]["value"].get<float>();
+			uniform.speed = _uniforms[i]["speed"].get<float>();
+			uniform.min = _uniforms[i]["min"].get<float>();
+			uniform.max = _uniforms[i]["max"].get<float>();
+			uniform.type = _uniforms[i]["type"].get<std::string>();
+			uniforms.push_back(uniform);
+		}
 	}
 }
 
@@ -244,11 +258,85 @@ void reload_fragment_shader_from_file()
 	reload_fragment_shader(string);
 }
 
-// doesnt work?
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void load_music()
 {
-	if (action && key == 'L' && (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL)))
-		load_fragmentshader_from_file();
+	nfdchar_t *outPath = NULL;
+	nfdresult_t result = NFD_OpenDialog("mp3", NULL, &outPath);
+
+	if (result == NFD_OKAY)
+	{
+		int device = -1;
+		int freq = 44100;
+		BASS_Init(device, freq, 0, 0, NULL);
+		streamHandle = BASS_StreamCreateFile(FALSE, outPath, 0, 0, BASS_SAMPLE_LOOP);
+		BASS_ChannelPlay(streamHandle, FALSE);
+		playMusic = true;
+	}
+}
+
+float read_amplitude()
+{
+	float fft[1024];
+	BASS_ChannelGetData(streamHandle, fft, BASS_DATA_FFT2048);
+	int b0 = 0;
+	std::vector<int> spectrum;
+
+	for (int x = 0; x < SPECWIDTH; x++)
+	{
+		float peak = 0;
+		int b1 = (int)pow(2, x * 10.0 / (SPECWIDTH - 1));
+		if (b1 > 1023) b1 = 1023;
+		if (b1 <= b0) b1 = b0 + 1;
+		for (; b0<b1; b0++)
+		{
+			if (peak < fft[1 + b0]) peak = fft[1 + b0];
+		}
+		int y = (int)(sqrt(peak) * 3 * 255 - 4);
+		if (preciseSpectrum)
+		{
+			if (y > 255) y = 255;
+			if (y < 0) y = 0;
+		}
+		spectrum.push_back(y);
+	}
+
+	float average = accumulate(spectrum.begin(), spectrum.end(), 0.0) / spectrum.size();
+	return average;
+	//printf("%f\n", average);
+}
+
+void update_spectrum()
+{
+	float average = read_amplitude();
+
+	GLint loc = glGetUniformLocation(program, "spectrum");
+	if (loc != -1)
+	{
+		glUniform1f(loc, average);
+	}
+	ImGui::Text("Spectrum: %f", average);
+}
+
+void draw_music_window()
+{
+	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_FirstUseEver);
+	ImGui::Begin(".: music :.", &playMusic);
+	ImGui::SliderFloat("volume", &volume, 0.0, 1.0);
+	if (ImGui::Button("Pause"))
+	{
+		BASS_ChannelPause(streamHandle);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Stop"))
+	{
+		BASS_ChannelStop(streamHandle);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Resume"))
+	{
+		BASS_ChannelPlay(streamHandle, FALSE);
+	}
+	ImGui::End();
 }
 
 int main(int argc, char* argv[])
@@ -263,8 +351,6 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 	GLFWwindow* window = glfwCreateWindow(xres, yres, ".: yolo :.", NULL, NULL);
-	//glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
-	//glfwSetKeyCallback(window, key_callback); // doesnt work
 	glfwSetWindowSizeCallback(window, window_size_callback);
 	glfwSetErrorCallback(error_callback);
 	glfwMakeContextCurrent(window);
@@ -299,7 +385,6 @@ int main(int argc, char* argv[])
 	snprintf(chr_xres, sizeof chr_xres, "%f", (float)xres);
 	snprintf(chr_yres, sizeof chr_yres, "%f", (float)yres);
 
-	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
@@ -315,6 +400,26 @@ int main(int argc, char* argv[])
 		else if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_R))
 		{
 			reload_fragment_shader_from_file();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_M))
+		{
+			load_music();
+		}
+		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_P))
+		{
+			preciseSpectrum = !preciseSpectrum;
+		}
+		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_S))
+		{
+			BASS_ChannelStop(streamHandle);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_W))
+		{
+			BASS_ChannelPause(streamHandle);
+		}
+		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_L))
+		{
+			BASS_ChannelPlay(streamHandle, FALSE);
 		}
 
 		ImGui_ImplGlfwGL3_NewFrame();
@@ -337,6 +442,31 @@ int main(int argc, char* argv[])
 				}
 				ImGui::EndMenu();
 			}
+			if(ImGui::BeginMenu("Sound"))
+			{
+				if(ImGui::MenuItem("Load Music", "CTRL+M"))
+				{
+					load_music();
+				}
+				if(ImGui::MenuItem("Stop Music", "CTRL+S"))
+				{
+					BASS_ChannelStop(streamHandle);
+				}
+				if (ImGui::MenuItem("Pause Music", "CTRL+W"))
+				{
+					BASS_ChannelPause(streamHandle);
+				}
+				if (ImGui::MenuItem("Resume Music", "CTRL+L"))
+				{
+					BASS_ChannelPlay(streamHandle, FALSE);
+				}
+				ImGui::Separator();
+				if (ImGui::MenuItem("Precise Spectrum", "CTRL+P"))
+				{
+					preciseSpectrum = !preciseSpectrum;
+				}
+				ImGui::EndMenu();
+			}
 			ImGui::EndMainMenuBar();
 		}
 
@@ -349,9 +479,14 @@ int main(int argc, char* argv[])
 		}
 
 		update_resolution();
+		update_spectrum();
 
 		ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
 		ImGui::End();
+
+		draw_music_window();
+
+		BASS_ChannelSetAttribute(streamHandle, BASS_ATTRIB_VOL, volume);
 
 		// Rendering
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
@@ -364,6 +499,7 @@ int main(int argc, char* argv[])
 	// Cleanup
 	ImGui_ImplGlfwGL3_Shutdown();
 	glfwTerminate();
+	BASS_Free();
 
 	return 0;
 }

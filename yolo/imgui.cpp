@@ -2118,7 +2118,9 @@ void ImGui::NewFrame()
         IM_PLACEMENT_NEW(g.LogClipboard) ImGuiTextBuffer();
 
         IM_ASSERT(g.Settings.empty());
+#ifndef _DEBUG // note: little hack from me to prevent settings beeing loaded if debug build
         LoadIniSettingsFromDisk(g.IO.IniFilename);
+#endif
         g.Initialized = true;
     }
 

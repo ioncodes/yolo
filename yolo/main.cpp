@@ -64,6 +64,8 @@ HSTREAM streamHandle;
 bool preciseSpectrum = true;
 bool playMusic = false;
 float volume = 1.0;
+std::vector<std::string> logs;
+bool showLogs = false;
 
 static void error_callback(int error, const char* description)
 {
@@ -339,6 +341,20 @@ void draw_music_window()
 	ImGui::End();
 }
 
+void draw_log_window() 
+{
+	if(showLogs)
+	{
+		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
+		ImGui::Begin(".: logs :.");
+		for(int i = 0; i < logs.size(); i++)
+		{
+			ImGui::Text(logs[i].data());
+		}
+		ImGui::End();
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	if (!glfwInit())
@@ -361,10 +377,12 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
-	const GLubyte* version = glGetString(GL_VERSION); // version as a string
-	printf("Renderer: %s\n", renderer);
-	printf("OpenGL version supported: %s\n", version);
+	const GLubyte *renderer = glGetString(GL_RENDERER); // get renderer string
+	const GLubyte *version = glGetString(GL_VERSION); // version as a string
+	std::string log_render = std::string("Renderer: ").append((char*)renderer);
+	std::string log_version = std::string("OpenGL version supported: ").append((char*)version);
+	logs.push_back(log_render);
+	logs.push_back(log_version);
 
 	ImGui_ImplGlfwGL3_Init(window, true);
 
@@ -421,6 +439,10 @@ int main(int argc, char* argv[])
 		{
 			BASS_ChannelPlay(streamHandle, FALSE);
 		}
+		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_G))
+		{
+			showLogs = !showLogs;
+		}
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
@@ -467,6 +489,14 @@ int main(int argc, char* argv[])
 				}
 				ImGui::EndMenu();
 			}
+			if(ImGui::BeginMenu("Other"))
+			{
+				if (ImGui::MenuItem("Toggle Logs", "CTRL+G"))
+				{
+					showLogs = !showLogs;
+				}
+				ImGui::EndMenu();
+			}
 			ImGui::EndMainMenuBar();
 		}
 
@@ -485,6 +515,7 @@ int main(int argc, char* argv[])
 		ImGui::End();
 
 		draw_music_window();
+		draw_log_window();
 
 		BASS_ChannelSetAttribute(streamHandle, BASS_ATTRIB_VOL, volume);
 

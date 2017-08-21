@@ -56,6 +56,7 @@ GLuint fragmentShader;
 std::vector<Uniform> uniforms;
 char chr_xres[32];
 char chr_yres[32];
+char *fragPath;
 
 static void error_callback(int error, const char* description)
 {
@@ -194,6 +195,11 @@ char* load_file(char *extensions)
 		fclose(f);
 
 		string[fsize] = 0;
+
+		char *extension = strrchr(outPath, '.');
+
+		if(extension && strcmp(extension, ".json"))
+			fragPath = (char*)outPath;
 		return string;
 	}
 	return 0; // todo: replace this with something appropriate
@@ -240,7 +246,7 @@ int main(int argc, char* argv[])
 	glfwSwapInterval(1);
 	
 	if (gl3wInit()) {
-		fprintf(stderr, "failed to initialize OpenGL\n");
+		fprintf(stderr, "Failed to initialize OpenGL\n");
 		return -1;
 	}
 
@@ -286,6 +292,21 @@ int main(int argc, char* argv[])
 				if (ImGui::MenuItem("Load Uniforms", "CTRL+U"))
 				{
 					load_uniforms_from_file();
+				}
+				if(ImGui::MenuItem("Reload Fragment", "CTRL+R"))
+				{
+					FILE *f;
+					fopen_s(&f, fragPath, "rb");
+					fseek(f, 0, SEEK_END);
+					long fsize = ftell(f);
+					rewind(f);
+
+					char *string = (char*)malloc(fsize + 1);
+					fread(string, fsize, 1, f);
+					fclose(f);
+
+					string[fsize] = 0;
+					reload_fragment_shader(string);
 				}
 				ImGui::EndMenu();
 			}

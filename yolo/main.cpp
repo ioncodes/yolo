@@ -341,7 +341,7 @@ int main(int argc, char* argv[])
 		}
 
 		ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_FirstUseEver);
-		ImGui::Begin(".: settings :.");
+		ImGui::Begin(".: uniforms :.");
 
 		for (int i = 0; i < uniforms.size(); i++)
 		{

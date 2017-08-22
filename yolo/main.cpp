@@ -50,6 +50,19 @@ struct Uniform
 	std::string type;
 };
 
+enum LogType
+{
+	Error,
+	Warning,
+	Info
+};
+
+struct LogMessage
+{
+	std::string message;
+	LogType type;
+};
+
 using json = nlohmann::json;
 
 
@@ -64,7 +77,7 @@ HSTREAM streamHandle;
 bool preciseSpectrum = true;
 bool playMusic = false;
 float volume = 1.0;
-std::vector<std::string> logs;
+std::vector<LogMessage> logs;
 bool showLogs = false;
 std::vector<float> spectrumHistory;
 bool showSpectrum = false;
@@ -177,15 +190,34 @@ void update_resolution()
 void reload_fragment_shader(char *shader)
 {
 	glDeleteProgram(program);
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &shader, NULL);
-	glCompileShader(fragmentShader);
-	program = glCreateProgram();
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, fragmentShader);
-	glBindFragDataLocation(program, 0, "outColor");
-	glLinkProgram(program);
-	glUseProgram(program);
+	GLuint new_fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(new_fragmentShader, 1, &shader, NULL);
+	glCompileShader(new_fragmentShader);
+	GLint success = 0;
+	glGetShaderiv(new_fragmentShader, GL_COMPILE_STATUS, &success);
+	if (success)
+	{
+		fragmentShader = new_fragmentShader;
+		program = glCreateProgram();
+		glAttachShader(program, vertexShader);
+		glAttachShader(program, fragmentShader);
+		glBindFragDataLocation(program, 0, "outColor");
+		glLinkProgram(program);
+		glUseProgram(program);
+	}
+	else
+	{
+		GLint logSize = 0;
+		glGetShaderiv(new_fragmentShader, GL_INFO_LOG_LENGTH, &logSize);
+		std::vector<GLchar> errorLog(logSize);
+		glGetShaderInfoLog(new_fragmentShader, logSize, &logSize, &errorLog[0]);
+		logs.push_back(LogMessage 
+		{
+			std::string("[error] ").append(errorLog.data()),
+			LogType::Error
+		});
+	}
+	glDeleteShader(new_fragmentShader);
 }
 
 char* load_file(char *extensions)
@@ -352,7 +384,18 @@ void draw_log_window()
 		ImGui::Begin(".: logs :.");
 		for(int i = 0; i < logs.size(); i++)
 		{
-			ImGui::Text(logs[i].data());
+			if(logs[i].type == LogType::Error)
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), logs[i].message.data());
+			}
+			else if(logs[i].type == LogType::Warning)
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), logs[i].message.data());
+			}
+			else
+			{
+				ImGui::Text(logs[i].message.data());
+			}
 		}
 		ImGui::End();
 	}
@@ -397,8 +440,16 @@ int main(int argc, char* argv[])
 	const GLubyte *version = glGetString(GL_VERSION); // version as a string
 	std::string log_render = std::string("Renderer: ").append((char*)renderer);
 	std::string log_version = std::string("OpenGL version supported: ").append((char*)version);
-	logs.push_back(log_render);
-	logs.push_back(log_version);
+	logs.push_back(LogMessage 
+	{ 
+		log_render,
+		LogType::Info
+	});
+	logs.push_back(LogMessage
+	{
+		log_version,
+		LogType::Info
+	});
 
 	ImGui_ImplGlfwGL3_Init(window, true);
 

@@ -149,11 +149,18 @@
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
     <ClCompile Include="imgui_impl_glfw_gl3.cpp" />
+    <ClCompile Include="keyboard.cpp" />
+    <ClCompile Include="logger.cpp" />
+    <ClCompile Include="logmessage.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui_impl_glfw_gl3.h" />
     <ClInclude Include="json.hpp" />
+    <ClInclude Include="keyboard.h" />
+    <ClInclude Include="logger.h" />
+    <ClInclude Include="logmessage.h" />
+    <ClInclude Include="logtype.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

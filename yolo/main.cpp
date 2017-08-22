@@ -9,6 +9,9 @@
 #include <vector>
 #include <nativefiledialog/nfd.h>
 #include "json.hpp"
+#include "logmessage.h"
+#include "logger.h"
+#include "keyboard.h"
 
 #define SPECWIDTH 368
 #define SPECHEIGHT 127
@@ -50,21 +53,7 @@ struct Uniform
 	std::string type;
 };
 
-enum LogType
-{
-	Error,
-	Warning,
-	Info
-};
-
-struct LogMessage
-{
-	std::string message;
-	LogType type;
-};
-
 using json = nlohmann::json;
-
 
 GLuint program;
 GLuint vertexShader;
@@ -77,10 +66,14 @@ HSTREAM streamHandle;
 bool preciseSpectrum = true;
 bool playMusic = false;
 float volume = 1.0;
-std::vector<LogMessage> logs;
+
 bool showLogs = false;
-std::vector<float> spectrumHistory;
+Logger logger = Logger(showLogs);
+
 bool showSpectrum = false;
+std::vector<float> spectrumHistory;
+
+Keyboard keyboard = Keyboard();
 
 static void error_callback(int error, const char* description)
 {
@@ -154,7 +147,6 @@ void init()
 	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
 }
 
-
 void update_uniform(Uniform &uniform)
 {
 	GLint loc = glGetUniformLocation(program, uniform.name.data());
@@ -211,11 +203,7 @@ void reload_fragment_shader(char *shader)
 		glGetShaderiv(new_fragmentShader, GL_INFO_LOG_LENGTH, &logSize);
 		std::vector<GLchar> errorLog(logSize);
 		glGetShaderInfoLog(new_fragmentShader, logSize, &logSize, &errorLog[0]);
-		logs.push_back(LogMessage 
-		{
-			std::string("[error] ").append(errorLog.data()),
-			LogType::Error
-		});
+		logger.AddMessage(std::string("[error] ").append(errorLog.data()), LogType::Error);
 	}
 	glDeleteShader(new_fragmentShader);
 }
@@ -339,7 +327,6 @@ float read_amplitude()
 	float average = accumulate(spectrum.begin(), spectrum.end(), 0.0) / spectrum.size();
 	spectrumHistory.push_back(average);
 	return average;
-	//printf("%f\n", average);
 }
 
 void update_spectrum()
@@ -376,31 +363,6 @@ void draw_music_window()
 	ImGui::End();
 }
 
-void draw_log_window() 
-{
-	if(showLogs)
-	{
-		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
-		ImGui::Begin(".: logs :.");
-		for(int i = 0; i < logs.size(); i++)
-		{
-			if(logs[i].type == LogType::Error)
-			{
-				ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), logs[i].message.data());
-			}
-			else if(logs[i].type == LogType::Warning)
-			{
-				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), logs[i].message.data());
-			}
-			else
-			{
-				ImGui::Text(logs[i].message.data());
-			}
-		}
-		ImGui::End();
-	}
-}
-
 void draw_spectrum()
 {
 	if(showSpectrum)
@@ -416,12 +378,21 @@ void draw_spectrum()
 
 int main(int argc, char* argv[])
 {
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_F, load_fragmentshader_from_file);
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_U, load_uniforms_from_file);
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_R, reload_fragment_shader_from_file);
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_M, load_music);
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_P, []() -> void { preciseSpectrum = !preciseSpectrum; });
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_S, []() -> void { BASS_ChannelStop(streamHandle); });
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_W, []() -> void { BASS_ChannelPause(streamHandle); });
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_L, []() -> void { BASS_ChannelPlay(streamHandle, FALSE); });
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_G, []() -> void { showLogs = !showLogs; });
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_T, []() -> void { showSpectrum = !showSpectrum; });
 	if (!glfwInit())
 		return 1;
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_SAMPLES, 8);
 #if __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
@@ -431,7 +402,8 @@ int main(int argc, char* argv[])
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 	
-	if (gl3wInit()) {
+	if (gl3wInit()) 
+	{
 		fprintf(stderr, "Failed to initialize OpenGL\n");
 		return -1;
 	}
@@ -440,16 +412,8 @@ int main(int argc, char* argv[])
 	const GLubyte *version = glGetString(GL_VERSION); // version as a string
 	std::string log_render = std::string("Renderer: ").append((char*)renderer);
 	std::string log_version = std::string("OpenGL version supported: ").append((char*)version);
-	logs.push_back(LogMessage 
-	{ 
-		log_render,
-		LogType::Info
-	});
-	logs.push_back(LogMessage
-	{
-		log_version,
-		LogType::Info
-	});
+	logger.AddMessage(log_render, LogType::Info);
+	logger.AddMessage(log_version, LogType::Info);
 
 	ImGui_ImplGlfwGL3_Init(window, true);
 
@@ -474,46 +438,7 @@ int main(int argc, char* argv[])
 	{
 		glfwPollEvents();
 
-		if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_F))
-		{
-			load_fragmentshader_from_file();
-		}
-		else if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_U))
-		{
-			load_uniforms_from_file();
-		}
-		else if(glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_R))
-		{
-			reload_fragment_shader_from_file();
-		}
-		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_M))
-		{
-			load_music();
-		}
-		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_P))
-		{
-			preciseSpectrum = !preciseSpectrum;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_S))
-		{
-			BASS_ChannelStop(streamHandle);
-		}
-		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_W))
-		{
-			BASS_ChannelPause(streamHandle);
-		}
-		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_L))
-		{
-			BASS_ChannelPlay(streamHandle, FALSE);
-		}
-		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_G))
-		{
-			showLogs = !showLogs;
-		}
-		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_T))
-		{
-			showSpectrum = !showSpectrum;
-		}
+		keyboard.CheckKeyboard(window);
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
@@ -568,7 +493,7 @@ int main(int argc, char* argv[])
 			{
 				if (ImGui::MenuItem("Toggle Logs", "CTRL+G"))
 				{
-					showLogs = !showLogs;
+					showLogs = (bool*)!showLogs;
 				}
 				ImGui::EndMenu();
 			}
@@ -590,7 +515,7 @@ int main(int argc, char* argv[])
 		ImGui::End();
 
 		draw_music_window();
-		draw_log_window();
+		logger.DrawLogWindow();
 		draw_spectrum();
 
 		BASS_ChannelSetAttribute(streamHandle, BASS_ATTRIB_VOL, volume);

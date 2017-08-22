@@ -66,13 +66,15 @@ bool playMusic = false;
 float volume = 1.0;
 std::vector<std::string> logs;
 bool showLogs = false;
+std::vector<float> spectrumHistory;
+bool showSpectrum = false;
 
 static void error_callback(int error, const char* description)
 {
 	fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
-static void window_size_callback(GLFWwindow* window, int width, int height)
+static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	printf("Resizing to %dx%d\n", width, height);
 	xres = width;
@@ -303,6 +305,7 @@ float read_amplitude()
 	}
 
 	float average = accumulate(spectrum.begin(), spectrum.end(), 0.0) / spectrum.size();
+	spectrumHistory.push_back(average);
 	return average;
 	//printf("%f\n", average);
 }
@@ -355,6 +358,19 @@ void draw_log_window()
 	}
 }
 
+void draw_spectrum()
+{
+	if(showSpectrum)
+	{
+		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
+		ImGui::Begin(".: spectrum :.");
+		float spectrum[120];
+		std::copy(spectrumHistory.end() - 120, spectrumHistory.end(), spectrum); // todo: throw out too old data
+		ImGui::PlotLines("spectrum", spectrum, IM_ARRAYSIZE(spectrum));
+		ImGui::End();
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	if (!glfwInit())
@@ -367,7 +383,7 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 	GLFWwindow* window = glfwCreateWindow(xres, yres, ".: yolo :.", NULL, NULL);
-	glfwSetWindowSizeCallback(window, window_size_callback);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetErrorCallback(error_callback);
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
@@ -443,6 +459,10 @@ int main(int argc, char* argv[])
 		{
 			showLogs = !showLogs;
 		}
+		else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) && glfwGetKey(window, GLFW_KEY_T))
+		{
+			showSpectrum = !showSpectrum;
+		}
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
@@ -483,6 +503,10 @@ int main(int argc, char* argv[])
 					BASS_ChannelPlay(streamHandle, FALSE);
 				}
 				ImGui::Separator();
+				if (ImGui::MenuItem("Toggle Spectrum", "CTRL+T"))
+				{
+					showSpectrum = !showSpectrum;
+				}
 				if (ImGui::MenuItem("Precise Spectrum", "CTRL+P"))
 				{
 					preciseSpectrum = !preciseSpectrum;
@@ -516,6 +540,7 @@ int main(int argc, char* argv[])
 
 		draw_music_window();
 		draw_log_window();
+		draw_spectrum();
 
 		BASS_ChannelSetAttribute(streamHandle, BASS_ATTRIB_VOL, volume);
 

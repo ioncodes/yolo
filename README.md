@@ -26,6 +26,7 @@ Here ya go..
 * Music injection :dancer:
 * Sound visualizer :musical_note:
 * Builtin logging system :lupe:
+* Crossplatform
 * more :wink:
 
 ## TODO

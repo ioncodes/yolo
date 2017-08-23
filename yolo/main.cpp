@@ -17,8 +17,8 @@ Logger logger = Logger(drawLogs);
 
 bool drawMusic = false;
 bool drawSpectrum = false;
-bool drawSpectrumSprecise = false;
-Music music = Music(drawMusic, drawSpectrum, drawSpectrumSprecise);
+bool drawSpectrumPrecise = false;
+Music music = Music(drawMusic, drawSpectrum, drawSpectrumPrecise);
 
 Keyboard keyboard = Keyboard();
 
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_U, []() -> void { shaders->LoadUniforms(); });
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_R, []() -> void { shaders->ReloadFragmentShader(); });
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_M, []() -> void { music.LoadMusic(); });
-	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_P, []() -> void { drawSpectrumSprecise = !drawSpectrumSprecise; });
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_P, []() -> void { drawSpectrumPrecise = !drawSpectrumPrecise; });
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_S, []() -> void { music.Stop(); });
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_W, []() -> void { music.Pause(); });
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_L, []() -> void { music.Play(); });
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 	menubar.InstallMenu("Pause Music", "Sound", "CTRL+W", []() -> void { music.Pause(); });
 	menubar.InstallMenu("Play Music", "Sound", "CTRL+L", []() -> void { music.Play(); });
 	menubar.InstallMenu("Toggle Spectrum", "Sound", "CTRL+T", []() -> void { drawSpectrum = !drawSpectrum; });
-	menubar.InstallMenu("Precise Spectrum", "Sound", "CTRL+P", []() -> void { drawSpectrumSprecise = !drawSpectrumSprecise; });
+	menubar.InstallMenu("Precise Spectrum", "Sound", "CTRL+P", []() -> void { drawSpectrumPrecise = !drawSpectrumPrecise; });
 	menubar.InstallMenu("Toggle Logs", "Dev", "CTRL+G", []() -> void { drawLogs = (bool*)!drawLogs; });
 
 	if (!glfwInit())

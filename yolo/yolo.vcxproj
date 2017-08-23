@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="filesystem.cpp" />
     <ClCompile Include="gl3w.c" />
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
@@ -153,14 +154,22 @@
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="logmessage.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="music.cpp" />
+    <ClCompile Include="menubar.cpp" />
+    <ClCompile Include="shaders.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="filesystem.h" />
     <ClInclude Include="imgui_impl_glfw_gl3.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="logmessage.h" />
     <ClInclude Include="logtype.h" />
+    <ClInclude Include="music.h" />
+    <ClInclude Include="menubar.h" />
+    <ClInclude Include="shaders.h" />
+    <ClInclude Include="uniform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

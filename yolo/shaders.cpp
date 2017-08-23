@@ -35,6 +35,8 @@ void Shaders::ReloadFragmentShader()
 {
 	char *source = Filesystem::ReadFile(m_fragmentShaderPath);
 	m_fragmentShaderSource = source;
+	if(shaderLoadedCallback != NULL)
+		shaderLoadedCallback();
 }
 
 void Shaders::LoadUniforms()

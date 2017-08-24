@@ -130,6 +130,8 @@ void Shaders::CompileShader()
 	glAttachShader(m_program, m_fragmentShader);
 	glBindFragDataLocation(m_program, 0, "outColor");
 	glLinkProgram(m_program);
+	glDetachShader(m_program, m_fragmentShader);
+	glDetachShader(m_program, m_vertexShader);
 	glUseProgram(m_program);
 
 	// Specify the layout of the vertex data

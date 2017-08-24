@@ -55,7 +55,7 @@ Needed headers are (header's dependencies not listed):
 Get the dependencies, open the solution (I used VS2017), fix the include/lib paths and compile it :)
 
 ### Mac OSX
-I use this command to compile it on my mac:
+I use this command to compile it on my :apple::
 ```bash
 mkdir build
 g++ main.cpp filesystem.cpp keyboard.cpp logger.cpp logmessage.cpp menubar.cpp music.cpp shaders.cpp gl3w.c imgui_draw.cpp imgui_impl_glfw_gl3.cpp imgui.cpp -o build/yolo -framework OpenGl -framework Cocoa -framework CoreVideo -framework AppKit -framework IOKit /usr/local/Cellar/glfw/3.2.1/lib/libglfw3.a ~/Desktop/lib/libnfd_d.a -I/Users/luca/Desktop/include -std=c++11 ~/Desktop/lib/libbass.dylib

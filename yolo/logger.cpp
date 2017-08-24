@@ -12,21 +12,23 @@ void Logger::DrawLogWindow(bool draw)
 {
 	if (draw)
 	{
+		auto logs = m_logs;
+		std::reverse(std::begin(logs), std::end(logs)); // todo: remove this hack, find out how to autoscroll in ImGui
 		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
 		ImGui::Begin(".: logs :.");
-		for (int i = 0; i < m_logs.size(); i++)
+		for (int i = 0; i < logs.size(); i++)
 		{
-			if (m_logs[i].type == LogType::Error)
+			if (logs[i].type == LogType::Error)
 			{
-				ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), m_logs[i].message.data());
+				ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), logs[i].message.data());
 			}
-			else if (m_logs[i].type == LogType::Warning)
+			else if (logs[i].type == LogType::Warning)
 			{
-				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), m_logs[i].message.data());
+				ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), logs[i].message.data());
 			}
 			else
 			{
-				ImGui::Text(m_logs[i].message.data());
+				ImGui::Text(logs[i].message.data());
 			}
 		}
 		ImGui::End();

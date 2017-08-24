@@ -18,8 +18,7 @@ char* Filesystem::RequestFile(char *extensions)
 
 char* Filesystem::ReadFile(char* path)
 {
-	FILE *f;
-	fopen_s(&f, path, "rb");
+	FILE *f = fopen(path, "rb");
 	fseek(f, 0, SEEK_END);
 	long fsize = ftell(f);
 	rewind(f);

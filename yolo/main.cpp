@@ -13,7 +13,6 @@
 #include "shaders.h"
 
 bool drawLogs = false;
-Logger logger = Logger(drawLogs);
 
 bool drawMusic = false;
 bool drawSpectrum = false;
@@ -28,13 +27,18 @@ Shaders *shaders;
 
 static void shader_load_callback()
 {
-	printf("loaded shader");
+	Logger::AddMessage("Shader loaded", Info);
 	shaders->CompileShader();
+	std::vector<GLchar> shaderLog;
+	if (!shaders->CheckShaderState(&shaderLog))
+	{
+		Logger::AddMessage(&shaderLog[0], Error);
+	}
 }
 
 static void uniforms_load_callback()
 {
-	printf("loaded uniforms");
+	Logger::AddMessage("Uniforms loaded", Info);
 }
 
 static void error_callback(int error, const char* description)
@@ -103,8 +107,8 @@ int main(int argc, char* argv[])
 	const GLubyte *version = glGetString(GL_VERSION); // version as a string
 	std::string log_render = std::string("Renderer: ").append((char*)renderer);
 	std::string log_version = std::string("OpenGL version supported: ").append((char*)version);
-	logger.AddMessage(log_render, LogType::Info);
-	logger.AddMessage(log_version, LogType::Info);
+	Logger::AddMessage(log_render, LogType::Info);
+	Logger::AddMessage(log_version, LogType::Info);
 
 	ImGui_ImplGlfwGL3_Init(window, true);
 
@@ -126,13 +130,15 @@ int main(int argc, char* argv[])
 		menubar.DrawMenuBar();
 		music.DrawMusicWindow();
 		music.DrawSpectrumWindow();
-		logger.DrawLogWindow();
+		Logger::DrawLogWindow(drawLogs);
 
 		// Rendering
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 		ImGui::Render();
+
 		glfwSwapBuffers(window);
 	}
 

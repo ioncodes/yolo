@@ -7,10 +7,8 @@
 class Logger
 {
 private:
-	std::vector<LogMessage> m_logs;
-	bool& m_draw;
+	static std::vector<LogMessage> m_logs;
 public:
-	Logger(bool& draw);
-	void AddMessage(std::string message, LogType type);
-	void DrawLogWindow();
+	static void AddMessage(std::string message, LogType type);
+	static void DrawLogWindow(bool draw);
 };

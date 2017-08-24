@@ -212,3 +212,18 @@ void Shaders::DrawUniforms()
 	ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate); // todo: get this outta here
 	ImGui::End();
 }
+
+bool Shaders::CheckShaderState(std::vector<GLchar> *errorlog) const
+{
+	GLint success = 0;
+	glGetShaderiv(m_fragmentShader, GL_COMPILE_STATUS, &success);
+	GLint maxLength = 0;
+	glGetShaderiv(m_fragmentShader, GL_INFO_LOG_LENGTH, &maxLength);
+	if (!success)
+	{
+		std::vector<GLchar> errorLog(maxLength);
+		glGetShaderInfoLog(m_fragmentShader, maxLength, &maxLength, &errorLog[0]);
+		*errorlog = errorLog;
+	}
+	return success;
+}

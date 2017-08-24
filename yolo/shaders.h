@@ -59,4 +59,5 @@ public:
 	void SetShaderLoadedCallback(SHADERLOADEDPROC callback);
 	void SetUniformsLoadedCallback(UNIFORMSLOADEDPROC callback);
 	void DrawUniforms();
+	bool CheckShaderState(std::vector<GLchar>* errorlog) const;
 };

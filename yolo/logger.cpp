@@ -1,19 +1,16 @@
 #include "logger.h"
 #include <imgui/imgui.h>
 
-Logger::Logger(bool& draw) : m_draw(draw)
-{
-	m_draw = draw;
-}
+std::vector<LogMessage> Logger::m_logs;
 
 void Logger::AddMessage(std::string message, LogType type)
 {
 	m_logs.push_back(LogMessage(message, type));
 }
 
-void Logger::DrawLogWindow()
+void Logger::DrawLogWindow(bool draw)
 {
-	if (m_draw)
+	if (draw)
 	{
 		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
 		ImGui::Begin(".: logs :.");

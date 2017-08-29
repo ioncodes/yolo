@@ -12,7 +12,7 @@ private:
 public:
 	VM();
 	~VM();
-	void LoadModule(char *name, char *uniform, char *function);
+	void LoadModule(char* name, const char* uniform, const char* function);
 	value Load(char* file);
 	float Execute(char* name, float x);
 };

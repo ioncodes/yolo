@@ -32,7 +32,7 @@ value VM::Load(char *file) {
 	return ret;
 }
 
-void VM::LoadModule(char *name, char *uniform, char *function)
+void VM::LoadModule(char *name, const char *uniform, const char *function)
 {
 	const value module = Load(name);
 	if (module == NULL)
@@ -54,17 +54,17 @@ float VM::Execute(char *name, float x)
 {
 	for(int i = 0; i < m_modules.size(); i++)
 	{
-		value module = m_modules[i].module;
-		char *uniform = m_modules[i].uniform;
-		char *function = m_modules[i].function;
+		const value module = m_modules[i].module;
+		std::string uniform = m_modules[i].uniform;
+		std::string function = m_modules[i].function;
 
-		if (std::strcmp(uniform, name) != 0) continue;
+		if (std::strcmp(uniform.data(), name) != 0) continue;
 		
-		value functionField = val_field(module, val_id(function));
+		value functionField = val_field(module, val_id(function.data()));
 
 		float ret = val_float(val_call1(functionField, alloc_float(x)));
 
-		printf("%s: %f", name, ret);
+		printf("%s: %f\n", name, ret);
 
 		return ret;
 	}

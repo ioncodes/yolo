@@ -9,7 +9,6 @@ Shaders::Shaders()
 	m_fragmentShaderSource = (char*)DEFAULT_FRAGMENT;
 	CompileShader();
 	m_vm = new VM();
-	m_vm->LoadModule("time.n", "time", "update");
 }
 
 Shaders::~Shaders()
@@ -65,6 +64,7 @@ void Shaders::ParseUniforms(char *uniforms)
 			_uniforms[i]["function"].get<std::string>(),
 			_uniforms[i]["value"].get<float>()
 		);
+		m_vm->LoadModule((char*)uniform.path.data(), uniform.name.data(), uniform.function.data());
 		m_uniforms.push_back(uniform);
 	}
 }

@@ -4,6 +4,6 @@
 struct Module
 {
 	value module;
-	char *uniform;
-	char *function;
+	std::string uniform;
+	std::string function;
 };

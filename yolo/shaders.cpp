@@ -8,11 +8,7 @@ Shaders::Shaders()
 {
 	m_fragmentShaderSource = (char*)DEFAULT_FRAGMENT;
 	CompileShader();
-<<<<<<< HEAD
-	m_vm = new VM();
-=======
 	m_uniforms.push_back(m_time);
->>>>>>> parent of 32e2235... implement scripting (unstable)
 }
 
 Shaders::~Shaders()
@@ -25,12 +21,12 @@ Shaders::~Shaders()
 void Shaders::LoadFragmentShader()
 {
 	char *path = Filesystem::RequestFile("frag");
-	if(path != NULL)
+	if (path != NULL)
 	{
 		char *source = Filesystem::ReadFile(path);
 		m_fragmentShaderPath = path;
 		m_fragmentShaderSource = source;
-		if(shaderLoadedCallback != NULL)
+		if (shaderLoadedCallback != NULL)
 			shaderLoadedCallback();
 	}
 }
@@ -39,7 +35,7 @@ void Shaders::ReloadFragmentShader()
 {
 	char *source = Filesystem::ReadFile(m_fragmentShaderPath);
 	m_fragmentShaderSource = source;
-	if(shaderLoadedCallback != NULL)
+	if (shaderLoadedCallback != NULL)
 		shaderLoadedCallback();
 }
 
@@ -63,19 +59,12 @@ void Shaders::ParseUniforms(char *uniforms)
 	{
 		Uniform uniform = Uniform(
 			_uniforms[i]["name"].get<std::string>(),
-<<<<<<< HEAD
-			_uniforms[i]["function"].get<std::string>(),
-			_uniforms[i]["value"].get<float>(),
-			_uniforms[i]["arg1"].get<float>()
-=======
 			_uniforms[i]["value"].get<float>(),
 			_uniforms[i]["speed"].get<float>(),
 			_uniforms[i]["min"].get<float>(),
 			_uniforms[i]["max"].get<float>(),
 			_uniforms[i]["type"].get<std::string>()
->>>>>>> parent of 32e2235... implement scripting (unstable)
 		);
-		m_vm->LoadModule((char*)uniform.path.data(), uniform.name.data(), uniform.function.data());
 		m_uniforms.push_back(uniform);
 	}
 }
@@ -153,7 +142,7 @@ void Shaders::CompileShader()
 
 void Shaders::UpdateUniforms()
 {
-	for(int i = 0; i < m_uniforms.size(); i++)
+	for (int i = 0; i < m_uniforms.size(); i++)
 	{
 		Uniform uniform = m_uniforms[i];
 		GLint loc = glGetUniformLocation(m_program, uniform.name.data());
@@ -161,9 +150,6 @@ void Shaders::UpdateUniforms()
 		{
 			glUniform1f(loc, uniform.value);
 		}
-<<<<<<< HEAD
-		uniform.value = m_vm->Execute(uniform);
-=======
 		if (uniform.type == "+")
 			uniform.value += uniform.speed;
 		else if (uniform.type == "-")
@@ -172,7 +158,6 @@ void Shaders::UpdateUniforms()
 			uniform.value *= uniform.speed;
 		else if (uniform.type == "/")
 			uniform.value /= uniform.speed;
->>>>>>> parent of 32e2235... implement scripting (unstable)
 		m_uniforms[i] = uniform;
 	}
 }
@@ -211,14 +196,10 @@ void Shaders::DrawUniforms()
 	for (int i = 0; i < m_uniforms.size(); i++)
 	{
 		Uniform uniform = m_uniforms[i];
-<<<<<<< HEAD
-		ImGui::SliderFloat(uniform.name.data(), &uniform.arg1, 0.0, 100.0); // todo: implement this
-=======
 		if (uniform.type == "const")
 			ImGui::SliderFloat(uniform.name.data(), &uniform.value, uniform.min, uniform.max);
 		else
 			ImGui::SliderFloat(uniform.name.data(), &uniform.speed, uniform.min, uniform.max);
->>>>>>> parent of 32e2235... implement scripting (unstable)
 		m_uniforms[i] = uniform;
 	}
 

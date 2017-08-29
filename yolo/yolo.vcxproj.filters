@@ -51,6 +51,9 @@
     <ClCompile Include="shaders.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="vm.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui_impl_glfw_gl3.h">
@@ -84,6 +87,12 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="uniform.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="vm.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="module.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

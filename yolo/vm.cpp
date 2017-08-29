@@ -1,5 +1,4 @@
 #include "vm.h"
-#include <tuple>
 
 VM::VM()
 {
@@ -50,7 +49,7 @@ void VM::LoadModule(char *name, const char *uniform, const char *function)
 	}
 }
 
-float VM::Execute(char *name, float x) 
+float VM::Execute(Uniform uni) 
 {
 	for(int i = 0; i < m_modules.size(); i++)
 	{
@@ -58,14 +57,15 @@ float VM::Execute(char *name, float x)
 		std::string uniform = m_modules[i].uniform;
 		std::string function = m_modules[i].function;
 
-		if (std::strcmp(uniform.data(), name) != 0) continue;
+		if (std::strcmp(uniform.data(), uni.name.data()) != 0) continue;
 		
 		value functionField = val_field(module, val_id(function.data()));
 
-		float ret = val_float(val_call1(functionField, alloc_float(x)));
+		float ret = val_float(val_call2(functionField, alloc_float(uni.value), alloc_float(uni.arg1)));
 
-		printf("%s: %f\n", name, ret);
+		printf("%s: %f\n", uni.name.data(), ret);
 
 		return ret;
 	}
+	return 0;
 }

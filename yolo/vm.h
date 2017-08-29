@@ -1,9 +1,10 @@
 #pragma once
-#include <neko/neko_vm.h>
-#include <cstdio>
-#include <vector>
+#include "uniform.h"
 #include "module.h"
-#include <tuple>
+#include <neko/neko_vm.h>
+#include <vector>
+
+struct Uniform;
 
 class VM
 {
@@ -13,6 +14,6 @@ public:
 	VM();
 	~VM();
 	void LoadModule(char* name, const char* uniform, const char* function);
+	float Execute(Uniform uni);
 	value Load(char* file);
-	float Execute(char* name, float x);
 };

@@ -62,7 +62,8 @@ void Shaders::ParseUniforms(char *uniforms)
 			_uniforms[i]["path"].get<std::string>(),
 			_uniforms[i]["name"].get<std::string>(),
 			_uniforms[i]["function"].get<std::string>(),
-			_uniforms[i]["value"].get<float>()
+			_uniforms[i]["value"].get<float>(),
+			_uniforms[i]["arg1"].get<float>()
 		);
 		m_vm->LoadModule((char*)uniform.path.data(), uniform.name.data(), uniform.function.data());
 		m_uniforms.push_back(uniform);
@@ -149,7 +150,7 @@ void Shaders::UpdateUniforms()
 		{
 			glUniform1f(loc, uniform.value);
 		}
-		uniform.value = m_vm->Execute((char*)uniform.name.data(), uniform.value);
+		uniform.value = m_vm->Execute(uniform);
 		m_uniforms[i] = uniform;
 	}
 }
@@ -193,7 +194,7 @@ void Shaders::DrawUniforms()
 	for (int i = 0; i < m_uniforms.size(); i++)
 	{
 		Uniform uniform = m_uniforms[i];
-		ImGui::SliderFloat(uniform.name.data(), &uniform.value, uniform.value - 10.0f, uniform.value + 10.0f); // todo: implement this
+		ImGui::SliderFloat(uniform.name.data(), &uniform.arg1, 0.0, 100.0); // todo: implement this
 		m_uniforms[i] = uniform;
 	}
 

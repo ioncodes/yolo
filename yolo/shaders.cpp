@@ -8,7 +8,11 @@ Shaders::Shaders()
 {
 	m_fragmentShaderSource = (char*)DEFAULT_FRAGMENT;
 	CompileShader();
+<<<<<<< HEAD
 	m_vm = new VM();
+=======
+	m_uniforms.push_back(m_time);
+>>>>>>> parent of 32e2235... implement scripting (unstable)
 }
 
 Shaders::~Shaders()
@@ -16,7 +20,6 @@ Shaders::~Shaders()
 	glDeleteShader(m_fragmentShader);
 	glDeleteShader(m_vertexShader);
 	glDeleteProgram(m_program);
-	delete m_vm;
 }
 
 void Shaders::LoadFragmentShader()
@@ -59,11 +62,18 @@ void Shaders::ParseUniforms(char *uniforms)
 	for (int i = 0; i < _uniforms.size(); i++)
 	{
 		Uniform uniform = Uniform(
-			_uniforms[i]["path"].get<std::string>(),
 			_uniforms[i]["name"].get<std::string>(),
+<<<<<<< HEAD
 			_uniforms[i]["function"].get<std::string>(),
 			_uniforms[i]["value"].get<float>(),
 			_uniforms[i]["arg1"].get<float>()
+=======
+			_uniforms[i]["value"].get<float>(),
+			_uniforms[i]["speed"].get<float>(),
+			_uniforms[i]["min"].get<float>(),
+			_uniforms[i]["max"].get<float>(),
+			_uniforms[i]["type"].get<std::string>()
+>>>>>>> parent of 32e2235... implement scripting (unstable)
 		);
 		m_vm->LoadModule((char*)uniform.path.data(), uniform.name.data(), uniform.function.data());
 		m_uniforms.push_back(uniform);
@@ -73,6 +83,7 @@ void Shaders::ParseUniforms(char *uniforms)
 void Shaders::ResetUniforms()
 {
 	m_uniforms.clear();
+	m_uniforms.push_back(m_time);
 }
 
 void Shaders::CompileShader()
@@ -150,7 +161,18 @@ void Shaders::UpdateUniforms()
 		{
 			glUniform1f(loc, uniform.value);
 		}
+<<<<<<< HEAD
 		uniform.value = m_vm->Execute(uniform);
+=======
+		if (uniform.type == "+")
+			uniform.value += uniform.speed;
+		else if (uniform.type == "-")
+			uniform.value -= uniform.speed;
+		else if (uniform.type == "*")
+			uniform.value *= uniform.speed;
+		else if (uniform.type == "/")
+			uniform.value /= uniform.speed;
+>>>>>>> parent of 32e2235... implement scripting (unstable)
 		m_uniforms[i] = uniform;
 	}
 }
@@ -159,11 +181,6 @@ void Shaders::UpdateResolution(float width, float height) const
 {
 	m_screenWidth = width;
 	m_screenHeight = height;
-	GLint loc = glGetUniformLocation(m_program, "resolution");
-	if (loc != -1)
-	{
-		glUniform2f(loc, m_screenWidth, m_screenHeight);
-	}
 }
 
 void Shaders::UpdateSpectrum(float amplitude) const
@@ -194,8 +211,21 @@ void Shaders::DrawUniforms()
 	for (int i = 0; i < m_uniforms.size(); i++)
 	{
 		Uniform uniform = m_uniforms[i];
+<<<<<<< HEAD
 		ImGui::SliderFloat(uniform.name.data(), &uniform.arg1, 0.0, 100.0); // todo: implement this
+=======
+		if (uniform.type == "const")
+			ImGui::SliderFloat(uniform.name.data(), &uniform.value, uniform.min, uniform.max);
+		else
+			ImGui::SliderFloat(uniform.name.data(), &uniform.speed, uniform.min, uniform.max);
+>>>>>>> parent of 32e2235... implement scripting (unstable)
 		m_uniforms[i] = uniform;
+	}
+
+	GLint loc = glGetUniformLocation(m_program, "resolution");
+	if (loc != -1)
+	{
+		glUniform2f(loc, m_screenWidth, m_screenHeight);
 	}
 
 	ImGui::Text("Spectrum: %f", m_spectrum);

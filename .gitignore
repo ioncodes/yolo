@@ -262,5 +262,3 @@ __pycache__/
 *.ini
 
 \.vscode/
-*.json
-*.n

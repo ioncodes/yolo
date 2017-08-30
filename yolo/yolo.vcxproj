@@ -153,6 +153,7 @@
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="logmessage.cpp" />
+    <ClCompile Include="LuaAdapter.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="music.cpp" />
     <ClCompile Include="menubar.cpp" />

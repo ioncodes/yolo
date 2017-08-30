@@ -5,43 +5,40 @@
 
 VM::VM(char *file)
 {
-	m_state = luaL_newstate();
-	luaL_openlibs(m_state);
-	int result = luaL_loadfile(m_state, file);
-	if (result)
-	{
-		fprintf(stderr, "Error loading script: %s!\n", lua_tostring(m_state, -1));
-	}
-	if (lua_pcall(m_state, 0, 1, 0))
-		fprintf(stderr, "Error loading script: %s!\n", lua_tostring(m_state, -1));
+	m_lua = new LuaAdapter(file);
 }
 
 void VM::Execute(char* function, Uniform uniform)
 {
-	// arg1 = const0
-	lua_pushnumber(m_state, uniform.const0);
-	lua_setglobal(m_state, "time_speed");
-	lua_getglobal(m_state, function);
-	if (lua_pcall(m_state, 0, 1, 0) != 0)
-		printf("Error: %s\n",
-			lua_tostring(m_state, -1));
-	lua_pop(m_state, 1);
+	/*lua_pushnumber(m_state, uniform.const0);
+	lua_setglobal(m_state, uniform.const0_name.data());*/
+	double ret { 0 };
+	m_lua->CallFunction(function, ret);
 }
 
 std::vector<std::tuple<const char*, const char*, const char*, const char*>> VM::GetGlobals() // basename, const0
 {
 	std::vector<std::tuple<const char*, const char*, const char*, const char*>> globals;
 	globals.push_back(std::make_tuple("time", "time_speed", "time_min", "time_max")); // todo: read from lua globals
+	globals.push_back(std::make_tuple("distortion", "distortion", "distortion_min", "distortion_max")); // todo: read from lua globals
+	globals.push_back(std::make_tuple("distortion_speed", "distortion_speed", "distortion_speed_min", "distortion_speed_max")); // todo: read from lua globals
+	globals.push_back(std::make_tuple("size", "size", "size_min", "size_max")); // todo: read from lua globals
+	globals.push_back(std::make_tuple("smooth0", "smooth0", "smooth0_min", "smooth0_max")); // todo: read from lua globals
+	globals.push_back(std::make_tuple("smooth1", "smooth1", "smooth1_min", "smooth1_max")); // todo: read from lua globals
+	globals.push_back(std::make_tuple("offset_x", "offset_x", "offset_x_min", "offset_x_max")); // todo: read from lua globals
+	globals.push_back(std::make_tuple("offset_y", "offset_y", "offset_y_min", "offset_y_max")); // todo: read from lua globals
+	globals.push_back(std::make_tuple("edges", "edges", "edges_min", "edges_max")); // todo: read from lua globals
 	return globals;
 }
 
 float VM::ResolveField(const char *name)
 {
-	lua_getglobal(m_state, name);
-	return lua_tonumber(m_state, -1);
+	double field = 0.0;
+	m_lua->Get(name, field);
+	return field;
 }
 
 VM::~VM()
 {
-	lua_close(m_state);
+	delete m_lua;
 }

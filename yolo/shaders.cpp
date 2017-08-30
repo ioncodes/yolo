@@ -66,7 +66,8 @@ void Shaders::ParseUniforms()
 			m_vm->ResolveField(base_name),
 			m_vm->ResolveField(const0),
 			m_vm->ResolveField(min),
-			m_vm->ResolveField(max)
+			m_vm->ResolveField(max),
+			const0
 		));
 	}
 }

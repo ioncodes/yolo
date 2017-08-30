@@ -39,5 +39,5 @@ float VM::ResolveField(const char *name)
 
 VM::~VM()
 {
-	delete m_lua;
+	//delete m_lua;
 }

@@ -7,6 +7,9 @@
 # include <lua/lauxlib.h>
 #endif
 #include <vector>
+#include <tuple>
+#include <vector>
+#include "uniform.h"
 
 class VM
 {
@@ -14,8 +17,9 @@ private:
 	lua_State* m_state;
 public:
 	VM(char* file);
-	float Execute(char* function, float arg0, float arg1, float arg2);
-	std::vector<char*> GetGlobals();
+	void Execute(char* function, Uniform uniform);
+	std::vector<std::tuple<const char*, const char*, const char*, const char*>> GetGlobals();
+	float ResolveField(const char* name);
 
 	lua_State* state() const
 	{

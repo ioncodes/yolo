@@ -57,8 +57,17 @@ void Shaders::ParseUniforms()
 	auto globals = m_vm->GetGlobals();
 	for(int i = 0; i < globals.size(); i++)
 	{
-		printf(globals[i]);
-		m_uniforms.push_back(Uniform(globals[i], 0.0, 0.01, 0.0, 1.0));
+		const char *base_name = std::get<0>(globals[i]);
+		const char *const0 = std::get<1>(globals[i]);
+		const char *min = std::get<2>(globals[i]);
+		const char *max = std::get<3>(globals[i]);
+		m_uniforms.push_back(Uniform(
+			base_name, 
+			m_vm->ResolveField(base_name),
+			m_vm->ResolveField(const0),
+			m_vm->ResolveField(min),
+			m_vm->ResolveField(max)
+		));
 	}
 }
 
@@ -146,7 +155,8 @@ void Shaders::UpdateUniforms()
 		char function_name[255];
 		strcpy(function_name, uniform.name.data());
 		std::string new_function_name = std::string(function_name).append("_update").data();
-		uniform.value = m_vm->Execute((char*)new_function_name.data(), uniform.value, uniform.const0, 0.0);
+		m_vm->Execute((char*)new_function_name.data(), uniform);
+		uniform.value = m_vm->ResolveField(uniform.name.data());
 		m_uniforms[i] = uniform;
 	}
 }

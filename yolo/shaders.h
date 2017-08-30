@@ -14,6 +14,7 @@ private:
 	GLuint m_vertexShader;
 	GLuint m_program;
 	char *m_fragmentShaderPath;
+	char *m_uniformsPath;
 	char *m_fragmentShaderSource;
 	const char *VERTEX =
 		"#version 330 core\n"
@@ -50,6 +51,7 @@ public:
 	~Shaders();
 	void LoadFragmentShader();
 	void ReloadFragmentShader();
+	void ReloadUniforms();
 	void LoadUniforms();
 	void ParseUniforms();
 	void ResetUniforms();

@@ -66,10 +66,12 @@ int main(int argc, char* argv[])
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_L, []() -> void { music.Play(); });
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_G, []() -> void { drawLogs = !drawLogs; });
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_T, []() -> void { drawSpectrum = !drawSpectrum; });
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_O, []() -> void { shaders->ReloadUniforms(); });
 
 	menubar.InstallMenu("Load Fragment", "File", "CTRL+F", []() -> void { shaders->LoadFragmentShader(); });
 	menubar.InstallMenu("Load Uniforms", "File", "CTRL+U", []() -> void { shaders->LoadUniforms(); });
 	menubar.InstallMenu("Reload Fragment", "File", "CTRL+R", []() -> void { shaders->ReloadFragmentShader(); });
+	menubar.InstallMenu("Reload Uniforms", "File", "CTRL+O", []() -> void { shaders->ReloadUniforms(); });
 	menubar.InstallMenu("Load Music", "Sound", "CTRL+M", []() -> void { music.LoadMusic(); drawMusic = true; });
 	menubar.InstallMenu("Stop Music", "Sound", "CTRL+S", []() -> void { music.Stop(); });
 	menubar.InstallMenu("Pause Music", "Sound", "CTRL+W", []() -> void { music.Pause(); });

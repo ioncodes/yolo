@@ -40,11 +40,21 @@ void Shaders::ReloadFragmentShader()
 		shaderLoadedCallback();
 }
 
+void Shaders::ReloadUniforms()
+{
+	ResetUniforms();
+	m_vm = new VM(m_uniformsPath);
+	ParseUniforms();
+	if (uniformsLoadedCallback != NULL)
+		uniformsLoadedCallback();
+}
+
 void Shaders::LoadUniforms()
 {
 	char *path = Filesystem::RequestFile("lua");
 	if (path != NULL)
 	{
+		m_uniformsPath = path;
 		ResetUniforms();
 		m_vm = new VM(path);
 		ParseUniforms();

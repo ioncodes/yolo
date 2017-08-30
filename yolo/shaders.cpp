@@ -16,6 +16,7 @@ Shaders::~Shaders()
 	glDeleteShader(m_fragmentShader);
 	glDeleteShader(m_vertexShader);
 	glDeleteProgram(m_program);
+	delete m_vm;
 }
 
 void Shaders::LoadFragmentShader()
@@ -75,7 +76,6 @@ void Shaders::ParseUniforms()
 void Shaders::ResetUniforms()
 {
 	m_uniforms.clear();
-	//delete m_vm;
 }
 
 void Shaders::CompileShader()

@@ -10,8 +10,7 @@ VM::VM(char *file)
 
 void VM::Execute(char* function, Uniform uniform)
 {
-	/*lua_pushnumber(m_state, uniform.const0);
-	lua_setglobal(m_state, uniform.const0_name.data());*/
+	m_lua->Set(uniform.const0_name.data(), uniform.const0); // change global constants to user value
 	double ret { 0 };
 	m_lua->CallFunction(function, ret);
 }

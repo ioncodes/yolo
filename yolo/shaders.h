@@ -37,7 +37,6 @@ private:
 		"f = max(o.x-s,e-o.x);\n"
 		"outColor = dot(clamp(f*r.y,0.,1.), 72.*(s-e)) * (s-.1) + f;\n"
 		"}\n";
-	//Uniform m_time = Uniform("time", 0.00, 0.01, 0.00, 0.1, "+");
 	mutable float m_screenWidth;
 	mutable float m_screenHeight;
 	mutable float m_spectrum;

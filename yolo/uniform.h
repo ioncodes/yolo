@@ -11,6 +11,7 @@ struct Uniform
 	float min;
 	float max;
 
+	// todo: add dynamic constants & reimplement everything :)
 	Uniform(std::string name, float value, float const0, float min, float max, std::string const0_name)
 	{
 		this->name = name;

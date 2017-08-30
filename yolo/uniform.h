@@ -4,19 +4,21 @@
 struct Uniform
 {
 	std::string name;
+	float init_value;
 	float value;
-	float speed;
+	float const0;
 	float min;
 	float max;
-	std::string type;
 
-	Uniform(std::string name, float value, float speed, float min, float max, std::string type)
+	Uniform(std::string name, float value, float const0, float min, float max)
 	{
 		this->name = name;
 		this->value = value;
-		this->speed = speed;
+		this->const0 = const0;
 		this->min = min;
 		this->max = max;
-		this->type = type;
+		this->init_value = value;
 	}
+
+	Uniform(){}
 };

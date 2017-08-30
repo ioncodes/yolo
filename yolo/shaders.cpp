@@ -3,12 +3,12 @@
 #include "json.hpp"
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+#include <lua/lua.h>
 
 Shaders::Shaders()
 {
 	m_fragmentShaderSource = (char*)DEFAULT_FRAGMENT;
 	CompileShader();
-	m_uniforms.push_back(m_time);
 }
 
 Shaders::~Shaders()
@@ -41,38 +41,31 @@ void Shaders::ReloadFragmentShader()
 
 void Shaders::LoadUniforms()
 {
-	char *path = Filesystem::RequestFile("json");
+	char *path = Filesystem::RequestFile("lua");
 	if (path != NULL)
 	{
 		ResetUniforms();
-		char *uniforms = Filesystem::ReadFile(path);
-		ParseUniforms(uniforms);
+		m_vm = new VM(path);
+		ParseUniforms();
 		if (uniformsLoadedCallback != NULL)
 			uniformsLoadedCallback();
 	}
 }
 
-void Shaders::ParseUniforms(char *uniforms)
+void Shaders::ParseUniforms()
 {
-	auto _uniforms = nlohmann::json::parse(uniforms);
-	for (int i = 0; i < _uniforms.size(); i++)
+	auto globals = m_vm->GetGlobals();
+	for(int i = 0; i < globals.size(); i++)
 	{
-		Uniform uniform = Uniform(
-			_uniforms[i]["name"].get<std::string>(),
-			_uniforms[i]["value"].get<float>(),
-			_uniforms[i]["speed"].get<float>(),
-			_uniforms[i]["min"].get<float>(),
-			_uniforms[i]["max"].get<float>(),
-			_uniforms[i]["type"].get<std::string>()
-		);
-		m_uniforms.push_back(uniform);
+		printf(globals[i]);
+		m_uniforms.push_back(Uniform(globals[i], 0.0, 0.01, 0.0, 1.0));
 	}
 }
 
 void Shaders::ResetUniforms()
 {
 	m_uniforms.clear();
-	m_uniforms.push_back(m_time);
+	//delete m_vm;
 }
 
 void Shaders::CompileShader()
@@ -150,14 +143,10 @@ void Shaders::UpdateUniforms()
 		{
 			glUniform1f(loc, uniform.value);
 		}
-		if (uniform.type == "+")
-			uniform.value += uniform.speed;
-		else if (uniform.type == "-")
-			uniform.value -= uniform.speed;
-		else if (uniform.type == "*")
-			uniform.value *= uniform.speed;
-		else if (uniform.type == "/")
-			uniform.value /= uniform.speed;
+		char function_name[255];
+		strcpy(function_name, uniform.name.data());
+		std::string new_function_name = std::string(function_name).append("_update").data();
+		uniform.value = m_vm->Execute((char*)new_function_name.data(), uniform.value, uniform.const0, 0.0);
 		m_uniforms[i] = uniform;
 	}
 }
@@ -196,10 +185,7 @@ void Shaders::DrawUniforms()
 	for (int i = 0; i < m_uniforms.size(); i++)
 	{
 		Uniform uniform = m_uniforms[i];
-		if (uniform.type == "const")
-			ImGui::SliderFloat(uniform.name.data(), &uniform.value, uniform.min, uniform.max);
-		else
-			ImGui::SliderFloat(uniform.name.data(), &uniform.speed, uniform.min, uniform.max);
+		ImGui::SliderFloat(uniform.name.data(), &uniform.const0, uniform.min, uniform.max);
 		m_uniforms[i] = uniform;
 	}
 

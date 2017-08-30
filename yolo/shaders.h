@@ -2,6 +2,7 @@
 #include <GL/gl3w.h>
 #include "uniform.h"
 #include <vector>
+#include "vm.h"
 
 typedef void(*SHADERLOADEDPROC)();
 typedef void(*UNIFORMSLOADEDPROC)();
@@ -36,10 +37,11 @@ private:
 		"f = max(o.x-s,e-o.x);\n"
 		"outColor = dot(clamp(f*r.y,0.,1.), 72.*(s-e)) * (s-.1) + f;\n"
 		"}\n";
-	Uniform m_time = Uniform("time", 0.00, 0.01, 0.00, 0.1, "+");
+	//Uniform m_time = Uniform("time", 0.00, 0.01, 0.00, 0.1, "+");
 	mutable float m_screenWidth;
 	mutable float m_screenHeight;
 	mutable float m_spectrum;
+	VM *m_vm;
 	std::vector<Uniform> m_uniforms;
 	SHADERLOADEDPROC shaderLoadedCallback; 
 	UNIFORMSLOADEDPROC uniformsLoadedCallback;
@@ -50,7 +52,7 @@ public:
 	void LoadFragmentShader();
 	void ReloadFragmentShader();
 	void LoadUniforms();
-	void ParseUniforms(char* uniforms);
+	void ParseUniforms();
 	void ResetUniforms();
 	void CompileShader();
 	void UpdateUniforms();

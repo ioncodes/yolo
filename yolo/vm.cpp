@@ -18,6 +18,34 @@ void VM::Execute(char* function, Uniform uniform)
 std::vector<std::tuple<const char*, const char*, const char*, const char*>> VM::GetGlobals() // basename, const0
 {
 	std::vector<std::tuple<const char*, const char*, const char*, const char*>> globals;
+	if(m_lua->OpenTable("uniforms"))
+	{
+		int length;
+		m_lua->GetField("size", length);
+		for(int i = 0; i < length; i++)
+		{
+			if (m_lua->OpenNestedTable(std::string("uni").append(std::to_string(i))))
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					if(j == 0)
+					{
+						std::string uniform;
+						m_lua->GetField("name", uniform);
+						printf("%s\n", uniform.data());
+					}
+					else
+					{
+						double uniform; // wtf
+						m_lua->GetField(j, uniform);
+						printf("%f\n", uniform);
+					}
+				}
+				m_lua->CloseTable();
+			}
+		}
+		m_lua->CloseTable();
+	}
 	globals.push_back(std::make_tuple("time", "time_speed", "time_min", "time_max")); // todo: read from lua globals
 	globals.push_back(std::make_tuple("distortion", "distortion", "distortion_min", "distortion_max")); // todo: read from lua globals
 	globals.push_back(std::make_tuple("distortion_speed", "distortion_speed", "distortion_speed_min", "distortion_speed_max")); // todo: read from lua globals

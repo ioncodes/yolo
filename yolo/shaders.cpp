@@ -68,17 +68,17 @@ void Shaders::ParseUniforms()
 	auto globals = m_vm->GetGlobals();
 	for(int i = 0; i < globals.size(); i++)
 	{
-		const char *base_name = std::get<0>(globals[i]);
-		const char *const0 = std::get<1>(globals[i]);
-		const char *min = std::get<2>(globals[i]);
-		const char *max = std::get<3>(globals[i]);
+		std::string name = std::get<0>(globals[i]);
+		float min = std::get<1>(globals[i]);
+		float max = std::get<2>(globals[i]);
+		float value = std::get<2>(globals[i]);
+		auto constants = std::get<4>(globals[i]);
 		m_uniforms.push_back(Uniform(
-			base_name, 
-			m_vm->ResolveField(base_name),
-			m_vm->ResolveField(const0),
-			m_vm->ResolveField(min),
-			m_vm->ResolveField(max),
-			const0
+			name, 
+			min,
+			max,
+			value,
+			constants
 		));
 	}
 }
@@ -155,19 +155,26 @@ void Shaders::CompileShader()
 
 void Shaders::UpdateUniforms()
 {
+	/*ResetUniforms();
+	ParseUniforms();*/
 	for (int i = 0; i < m_uniforms.size(); i++)
 	{
 		Uniform uniform = m_uniforms[i];
 		GLint loc = glGetUniformLocation(m_program, uniform.name.data());
 		if (loc != -1)
 		{
-			glUniform1f(loc, uniform.value);
+			glUniform1f(loc, m_vm->ResolveTableField(uniform.name.data()));
 		}
-		char function_name[255];
-		strcpy(function_name, uniform.name.data());
-		std::string new_function_name = std::string(function_name).append("_update").data();
-		m_vm->Execute((char*)new_function_name.data(), uniform);
-		uniform.value = m_vm->ResolveField(uniform.name.data());
+		for(int j = 0; j < uniform.constants.size(); j++)
+		{
+			GLint loc = glGetUniformLocation(m_program, std::get<0>(uniform.constants[j]).data());
+			if (loc != -1)
+			{
+				glUniform1f(loc, m_vm->ResolveTableField(std::get<0>(uniform.constants[j]).data()));
+			}
+		}
+		m_vm->Execute("update", uniform);
+		uniform.value = m_vm->ResolveTableField(uniform.name.data()); // preload it
 		m_uniforms[i] = uniform;
 	}
 }
@@ -206,7 +213,12 @@ void Shaders::DrawUniforms()
 	for (int i = 0; i < m_uniforms.size(); i++)
 	{
 		Uniform uniform = m_uniforms[i];
-		ImGui::SliderFloat(uniform.name.data(), &uniform.const0, uniform.min, uniform.max);
+		auto constants = uniform.constants;
+		for(int j = 0; j < constants.size(); j++)
+		{
+			ImGui::SliderFloat(std::get<0>(constants[j]).data(), &std::get<1>(constants[j]), uniform.min, uniform.max); // implement min max for consts
+		}
+		uniform.constants = constants;
 		m_uniforms[i] = uniform;
 	}
 

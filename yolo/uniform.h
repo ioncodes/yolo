@@ -1,26 +1,23 @@
 #pragma once
+#include <vector>
 #include <string>
 
 struct Uniform
 {
 	std::string name;
-	float init_value;
-	float value;
-	float const0;
-	std::string const0_name;
 	float min;
 	float max;
+	float value;
+	std::vector<std::tuple<std::string, float>> constants;
 
 	// todo: add dynamic constants & reimplement everything :)
-	Uniform(std::string name, float value, float const0, float min, float max, std::string const0_name)
+	Uniform(std::string name, float min, float max, float value, std::vector<std::tuple<std::string, float>> constants)
 	{
 		this->name = name;
-		this->value = value;
-		this->const0 = const0;
 		this->min = min;
 		this->max = max;
-		this->init_value = value;
-		this->const0_name = const0_name;
+		this->value = value;
+		this->constants = constants;
 	}
 
 	Uniform(){}

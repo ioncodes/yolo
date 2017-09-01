@@ -10,14 +10,22 @@ VM::VM(char *file)
 
 void VM::Execute(char* function, Uniform uniform)
 {
-	m_lua->Set(uniform.const0_name.data(), uniform.const0); // change global constants to user value
+	for (int i = 0; i < uniform.constants.size(); i++)
+	{
+		m_lua->Set("__name", uniform.name.data());
+		m_lua->Set("__key", std::get<0>(uniform.constants[i]).data());
+		m_lua->Set("__value", std::get<1>(uniform.constants[i]));
+
+		double ret;
+		m_lua->CallFunction("fix", ret);
+	}
 	double ret { 0 };
 	m_lua->CallFunction(function, ret);
 }
 
-std::vector<std::tuple<const char*, const char*, const char*, const char*>> VM::GetGlobals() // basename, const0
+std::vector<std::tuple<std::string, float, float, float, std::vector<std::tuple<std::string, float>>>> VM::GetGlobals() // remove this huge thing and use structs
 {
-	std::vector<std::tuple<const char*, const char*, const char*, const char*>> globals;
+	std::vector<std::tuple<std::string, float, float, float, std::vector<std::tuple<std::string, float>>>> globals;
 	if(m_lua->OpenTable("uniforms"))
 	{
 		int length;
@@ -26,35 +34,51 @@ std::vector<std::tuple<const char*, const char*, const char*, const char*>> VM::
 		{
 			if (m_lua->OpenNestedTable(std::string("uni").append(std::to_string(i))))
 			{
-				for (int j = 0; j < 4; j++)
+				std::string name;
+				m_lua->GetField("name", name);
+				float value;
+				m_lua->GetField(2, value);
+				float min;
+				float max;
+				
+				if (m_lua->OpenNestedTable("range"))
 				{
-					if(j == 0)
-					{
-						std::string uniform;
-						m_lua->GetField("name", uniform);
-						printf("%s\n", uniform.data());
-					}
-					else
-					{
-						double uniform; // wtf
-						m_lua->GetField(j, uniform);
-						printf("%f\n", uniform);
-					}
+					m_lua->GetField(1, min); // arrays start with 1 here
+					m_lua->GetField(2, max);
+					m_lua->CloseTable();
 				}
+
+				std::vector<std::tuple<std::string, float>> data;
+				if (m_lua->OpenNestedTable("data"))
+				{
+					int size = m_lua->GetTableLength();
+					for(int k = 0; k < size; k++)
+					{
+						std::string const_name;
+						m_lua->GetNestedField(k + 1, 1, const_name);
+						float init_value;
+						m_lua->GetNestedField(k + 1, 2, init_value);
+						data.push_back(make_tuple(const_name, init_value));
+					}
+					globals.push_back(std::make_tuple(name, min, max, value, data));
+					m_lua->CloseTable();
+				}
+
+				printf("%s\n", name.data());
+				printf("%f\n", min);
+				printf("%f\n", max);
+
+				for (int u = 0; u < data.size(); u++ )
+				{
+					printf("%s\n", std::get<0>(data[u]).data());
+					printf("%f\n", std::get<1>(data[u]));
+				}
+
 				m_lua->CloseTable();
 			}
 		}
 		m_lua->CloseTable();
 	}
-	globals.push_back(std::make_tuple("time", "time_speed", "time_min", "time_max")); // todo: read from lua globals
-	globals.push_back(std::make_tuple("distortion", "distortion", "distortion_min", "distortion_max")); // todo: read from lua globals
-	globals.push_back(std::make_tuple("distortion_speed", "distortion_speed", "distortion_speed_min", "distortion_speed_max")); // todo: read from lua globals
-	globals.push_back(std::make_tuple("size", "size", "size_min", "size_max")); // todo: read from lua globals
-	globals.push_back(std::make_tuple("smooth0", "smooth0", "smooth0_min", "smooth0_max")); // todo: read from lua globals
-	globals.push_back(std::make_tuple("smooth1", "smooth1", "smooth1_min", "smooth1_max")); // todo: read from lua globals
-	globals.push_back(std::make_tuple("offset_x", "offset_x", "offset_x_min", "offset_x_max")); // todo: read from lua globals
-	globals.push_back(std::make_tuple("offset_y", "offset_y", "offset_y_min", "offset_y_max")); // todo: read from lua globals
-	globals.push_back(std::make_tuple("edges", "edges", "edges_min", "edges_max")); // todo: read from lua globals
 	return globals;
 }
 
@@ -64,6 +88,58 @@ float VM::ResolveField(const char *name)
 	m_lua->Get(name, field);
 	return field;
 }
+
+float VM::ResolveTableField(const char *name)
+{
+	if (m_lua->OpenTable("uniforms"))
+	{
+		int length;
+		m_lua->GetField("size", length);
+		for (int i = 0; i < length; i++)
+		{
+			if (m_lua->OpenNestedTable(std::string("uni").append(std::to_string(i))))
+			{
+				if (name[0] != '_')
+				{
+					std::string _name;
+					m_lua->GetField("name", _name);
+					if(_name == std::string(name))
+					{
+						float value;
+						m_lua->GetField(2, value);
+						m_lua->CloseTable();
+						m_lua->CloseTable();
+						return value;
+					}
+				}
+				else
+				{
+					if (m_lua->OpenNestedTable("data"))
+					{
+						int size = m_lua->GetTableLength();
+						for (int k = 0; k < size; k++)
+						{
+							std::string _name;
+							m_lua->GetNestedField(k + 1, 1, _name);
+							if (_name == std::string(name))
+							{
+								float value;
+								m_lua->GetNestedField(k + 1, 1, value);
+								m_lua->CloseTable();
+								m_lua->CloseTable();
+								m_lua->CloseTable();
+								return value;
+							}
+						}
+						m_lua->CloseTable();
+					}
+				}
+				m_lua->CloseTable();
+			}
+		}
+		m_lua->CloseTable();
+	}
+}	
 
 VM::~VM()
 {

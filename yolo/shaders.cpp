@@ -174,7 +174,8 @@ void Shaders::UpdateUniforms()
 			}
 		}
 		m_vm->Execute("update", uniform);
-		uniform.value = m_vm->ResolveTableField(uniform.name.data()); // preload it
+		const auto val = m_vm->ResolveTableField(uniform.name.data()); // preload it
+		uniform.value = val;
 		m_uniforms[i] = uniform;
 	}
 }

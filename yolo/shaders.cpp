@@ -43,6 +43,7 @@ void Shaders::ReloadFragmentShader()
 void Shaders::ReloadUniforms()
 {
 	ResetUniforms();
+	delete m_vm;
 	m_vm = new VM(m_uniformsPath);
 	ParseUniforms();
 	if (uniformsLoadedCallback != NULL)
@@ -174,8 +175,7 @@ void Shaders::UpdateUniforms()
 			}
 		}
 		m_vm->Execute("update", uniform);
-		const auto val = m_vm->ResolveTableField(uniform.name.data()); // preload it
-		uniform.value = val;
+		uniform.value = m_vm->ResolveTableField(uniform.name.data());
 		m_uniforms[i] = uniform;
 	}
 }

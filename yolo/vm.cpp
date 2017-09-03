@@ -19,7 +19,7 @@ void VM::Execute(char* function, Uniform uniform)
 		double ret;
 		m_lua->CallFunction("fix", ret);
 	}
-	double ret { 0 };
+	double ret;
 	m_lua->CallFunction(function, ret);
 }
 
@@ -143,5 +143,5 @@ float VM::ResolveTableField(const char *name)
 
 VM::~VM()
 {
-	//delete m_lua;
+	delete m_lua;
 }

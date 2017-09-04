@@ -121,21 +121,17 @@ int main(int argc, char* argv[])
 		glfwPollEvents();
 
 		keyboard.CheckKeyboard(window);
-		glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) -> void
+		if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 		{
-			// allow keep pressing
-			if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-			{
-				double x;
-				double y;
-				int width, height;
-				glfwGetWindowSize(window, &width, &height);
-				glfwGetCursorPos(window, &x, &y);
-				x /= width;
-				y = 1.0 - y / height;
-				shaders->UpdateMouse(x, y);
-			}
-		});
+			double x;
+			double y;
+			int width, height;
+			glfwGetWindowSize(window, &width, &height);
+			glfwGetCursorPos(window, &x, &y);
+			x /= width;
+			y = 1.0 - y / height;
+			shaders->UpdateMouse(x, y);
+		}
 
 		ImGui_ImplGlfwGL3_NewFrame();
 

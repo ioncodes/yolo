@@ -15,7 +15,7 @@ void Logger::DrawLogWindow(bool draw)
 		auto logs = m_logs;
 		std::reverse(std::begin(logs), std::end(logs)); // todo: remove this hack, find out how to autoscroll in ImGui
 		ImGui::SetNextWindowSize(ImVec2(200, 200), ImGuiCond_FirstUseEver);
-		ImGui::Begin(".: logs :.");
+		ImGui::Begin(".: logs :.", false, ImGuiWindowFlags_AlwaysAutoResize);
 		for (int i = 0; i < logs.size(); i++)
 		{
 			if (logs[i].type == LogType::Error)

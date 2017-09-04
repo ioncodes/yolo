@@ -273,14 +273,63 @@ void Shaders::SetUniformsLoadedCallback(UNIFORMSLOADEDPROC callback)
 
 void Shaders::DrawUniforms()
 {
-	ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_FirstUseEver);
-	ImGui::Begin(".: uniforms :.");
+	ImGui::SetNextWindowSize(ImVec2(400, 400), ImGuiCond_FirstUseEver);
+	ImGui::Begin(".: data :.");
 
+	if (ImGui::CollapsingHeader("uniforms", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		DrawUniformTools();
+	}
+
+	if (ImGui::CollapsingHeader("monitor"))
+	{
+		DrawUniformMonitor();
+	}
+
+	ImGui::End();
+}
+
+void Shaders::DrawUniformMonitor()
+{
+	int total = -1;
+	glGetProgramiv(m_program, GL_ACTIVE_UNIFORMS, &total);
+	for (int i = 0; i < total; i++) 
+	{
+		int name_len = -1, num = -1;
+		GLenum type = GL_ZERO;
+		char name[100];
+		glGetActiveUniform(m_program, GLuint(i), sizeof(name) - 1,
+			&name_len, &num, &type, name);
+		name[name_len] = 0;
+		GLuint location = glGetUniformLocation(m_program, name);
+		if(type == GL_FLOAT_VEC2)
+		{
+			/*GLfloat params;
+			glGetnUniformfv(m_program, location, 2, &params);
+			printf("%f\n", params);*/
+		}
+		else if (type == GL_FLOAT)
+		{
+			GLfloat params;
+			glGetUniformfv(m_program, location, &params);
+			ImGui::Text(std::string(name).append(std::string(": %f")).data(), params);
+		}
+		else
+		{
+			printf("Unknown type %u for %s\n", type, name);
+		}
+	}
+	ImGui::Text("Spectrum: %f", m_spectrum);
+	ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate); // todo: get this outta here
+}
+
+void Shaders::DrawUniformTools()
+{
 	for (int i = 0; i < m_uniforms.size(); i++)
 	{
 		Uniform uniform = m_uniforms[i];
 		auto constants = uniform.constants;
-		for(int j = 0; j < constants.size(); j++)
+		for (int j = 0; j < constants.size(); j++)
 		{
 			ImGui::SliderFloat(std::get<0>(constants[j]).data(), &std::get<1>(constants[j]), uniform.min, uniform.max); // implement min max for consts
 		}
@@ -293,11 +342,6 @@ void Shaders::DrawUniforms()
 	{
 		glUniform2f(loc, m_screenWidth, m_screenHeight);
 	}
-
-	ImGui::Text("Spectrum: %f", m_spectrum);
-
-	ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate); // todo: get this outta here
-	ImGui::End();
 }
 
 bool Shaders::CheckShaderState(std::vector<GLchar> *errorlog) const

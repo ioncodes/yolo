@@ -135,6 +135,10 @@ int main(int argc, char* argv[])
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
+		char fps[255];
+		sprintf(fps, "%.1f", ImGui::GetIO().Framerate);
+		glfwSetWindowTitle(window, std::string(".: yolo :. ~ FPS ").append(fps).data());
+
 		shaders->UpdateSpectrum(music.ReadAmplitude());
 		shaders->UpdateUniforms();
 

@@ -320,7 +320,6 @@ void Shaders::DrawUniformMonitor()
 		}
 	}
 	ImGui::Text("Spectrum: %f", m_spectrum);
-	ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate); // todo: get this outta here
 }
 
 void Shaders::DrawUniformTools()

@@ -59,6 +59,7 @@ public:
 	void UpdateUniforms();
 	void UpdateResolution(float width, float height) const;
 	void UpdateSpectrum(float amplitude) const;
+	void UpdateMouse(float x, float y) const;
 	void SetShaderLoadedCallback(SHADERLOADEDPROC callback);
 	void SetUniformsLoadedCallback(UNIFORMSLOADEDPROC callback);
 	void DrawUniforms();

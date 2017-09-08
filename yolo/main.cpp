@@ -67,7 +67,9 @@ int main(int argc, char* argv[])
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_G, []() -> void { drawLogs = !drawLogs; });
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_T, []() -> void { drawSpectrum = !drawSpectrum; });
 	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_O, []() -> void { shaders->ReloadUniforms(true); });
-	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_Y, []() -> void { shaders->ReloadUniforms(false); });
+	// GLFW_KEY_Z maps to GLFW_KEY_Y on my keyboard.
+	// TODO: Fix GLFW_KEY_Z mapping
+	keyboard.InstallShortcut(GLFW_KEY_LEFT_CONTROL, GLFW_KEY_Z, []() -> void { shaders->ReloadUniforms(false); });
 
 	menubar.InstallMenu("Load Fragment", "File", "CTRL+F", []() -> void { shaders->LoadFragmentShader(); });
 	menubar.InstallMenu("Load Uniforms", "File", "CTRL+U", []() -> void { shaders->LoadUniforms(); });

@@ -53,7 +53,7 @@ public:
 	void LoadFragmentShader();
 	void ReloadFragmentShader();
 	void ReloadUniforms(bool cache);
-	void _ReloadUniforms();
+	void ReloadUniforms();
 	void CacheUniforms();
 	void RestoreUniforms();
 	void LoadUniforms();

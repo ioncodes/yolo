@@ -100,15 +100,14 @@ void Shaders::ReloadUniforms(bool cache)
 {
 	if (cache)
 		CacheUniforms();
-	_ReloadUniforms();
+	ReloadUniforms();
 	if (cache)
-		ResetUniforms();
+		RestoreUniforms();
 }
 
-void Shaders::_ReloadUniforms()
+void Shaders::ReloadUniforms()
 {
 	ResetUniforms();
-	delete m_vm;
 	m_vm = new VM(m_uniformsPath);
 	ParseUniforms();
 	if (uniformsLoadedCallback != NULL)
@@ -122,9 +121,25 @@ void Shaders::CacheUniforms()
 
 void Shaders::RestoreUniforms()
 {
-	for (int i = 0; i < m_uniformsCache.size(); i++)
+	for (int j = 0; j < m_uniforms.size(); j++)
 	{
-		m_uniforms[i] = m_uniformsCache[i];
+		for (int i = 0; i < m_uniformsCache.size(); i++)
+		{
+			if(m_uniforms[j].name == m_uniformsCache[i].name)
+			{
+				m_uniforms[j].value = m_uniformsCache[i].value;
+				for(int k = 0; k < m_uniforms[j].constants.size(); k++)
+				{
+					for (int h = 0; h < m_uniformsCache[i].constants.size(); h++)
+					{
+						if (std::get<0>(m_uniforms[j].constants[k]) == std::get<0>(m_uniformsCache[i].constants[h]))
+						{
+							std::get<1>(m_uniforms[j].constants[k]) = std::get<1>(m_uniformsCache[i].constants[h]);
+						}
+					}
+				}
+			}
+		}
 	}
 }
 

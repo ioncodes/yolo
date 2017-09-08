@@ -96,7 +96,16 @@ void Shaders::ReloadFragmentShader()
 		shaderLoadedCallback();
 }
 
-void Shaders::ReloadUniforms()
+void Shaders::ReloadUniforms(bool cache)
+{
+	if (cache)
+		CacheUniforms();
+	_ReloadUniforms();
+	if (cache)
+		ResetUniforms();
+}
+
+void Shaders::_ReloadUniforms()
 {
 	ResetUniforms();
 	delete m_vm;
@@ -104,6 +113,19 @@ void Shaders::ReloadUniforms()
 	ParseUniforms();
 	if (uniformsLoadedCallback != NULL)
 		uniformsLoadedCallback();
+}
+
+void Shaders::CacheUniforms()
+{
+	m_uniformsCache = m_uniforms;
+}
+
+void Shaders::RestoreUniforms()
+{
+	for (int i = 0; i < m_uniformsCache.size(); i++)
+	{
+		m_uniforms[i] = m_uniformsCache[i];
+	}
 }
 
 void Shaders::LoadUniforms()

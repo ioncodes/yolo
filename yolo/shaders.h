@@ -43,6 +43,7 @@ private:
 	mutable float m_spectrum;
 	VM *m_vm;
 	std::vector<Uniform> m_uniforms;
+	std::vector<Uniform> m_uniformsCache;
 	SHADERLOADEDPROC shaderLoadedCallback; 
 	UNIFORMSLOADEDPROC uniformsLoadedCallback;
 
@@ -51,7 +52,10 @@ public:
 	~Shaders();
 	void LoadFragmentShader();
 	void ReloadFragmentShader();
-	void ReloadUniforms();
+	void ReloadUniforms(bool cache);
+	void _ReloadUniforms();
+	void CacheUniforms();
+	void RestoreUniforms();
 	void LoadUniforms();
 	void ParseUniforms();
 	void ResetUniforms();

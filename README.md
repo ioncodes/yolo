@@ -17,8 +17,8 @@ yolo offers fast and live shader editing, which can be easily achieved via some 
 
 ## Shutup and gimme some screenies!
 Here ya go..
-![img](http://i.imgur.com/2s1fdtH.png)
-[Here a video](https://streamable.com/s/y4m2x)
+![img](https://i.imgur.com/F7YGwos.png)
+[Here is a video](https://streamable.com/tco59)
 
 ## Features
 * Hot fragment shader reload :fire:
@@ -27,11 +27,13 @@ Here ya go..
 * Sound visualizer :musical_note:
 * Builtin logging system
 * Crossplatform
-* more :wink:
+* Scriptengine using Lua
+* more :heart:
 
 ## TODO
-* Drop JSON and move to dynamic loading
-* Uniform value monitor
+* ~~Drop JSON and move to dynamic loading~~
+* ~~Uniform value monitor~~
+* Fix the bug which causes some lua functions not to be called
 * Vertex injection
 * Texture injection
 
@@ -42,6 +44,7 @@ Everything is linked statically except BASS (bass.dll). Here is a list of all li
 * nfd.lib (nativefiledialog)
 * bass.lib
 * glfw3.lib
+* lua53.lib
 
 Needed headers are (header's dependencies not listed):
 
@@ -50,6 +53,7 @@ Needed headers are (header's dependencies not listed):
 * glfw3.h
 * imgui.h
 * nfd.h (nativefiledialog)
+* LuaAdapter.hpp
 
 ## Compilation
 Get the dependencies, open the solution (I used VS2017), fix the include/lib paths and compile it :)

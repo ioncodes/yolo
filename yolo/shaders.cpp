@@ -356,7 +356,6 @@ void Shaders::DrawUniformMonitor()
 			printf("Unknown type %u for %s\n", type, name);
 		}
 	}
-	ImGui::Text("Spectrum: %f", m_spectrum);
 }
 
 void Shaders::DrawUniformTools()

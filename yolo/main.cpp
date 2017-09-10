@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
 
 		char fps[255];
 		sprintf(fps, "%.1f", ImGui::GetIO().Framerate);
-		glfwSetWindowTitle(window, std::string(".: yolo 0.2.1 @ FPS ").append(fps).append(" :.").data());
+		glfwSetWindowTitle(window, std::string(".: yolo 0.2.2 @ FPS ").append(fps).append(" :.").data());
 
 		shaders->UpdateSpectrum(music.ReadAmplitude());
 		shaders->UpdateUniforms();

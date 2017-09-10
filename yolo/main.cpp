@@ -49,7 +49,6 @@ static void error_callback(int error, const char* description)
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	printf("Resizing to %dx%d\n", width, height);
-	glfwSetWindowSize(window, width, height);
 	shaders->UpdateResolution(width, height);
 	glViewport(0, 0, width, height);
 }
@@ -107,7 +106,10 @@ int main(int argc, char* argv[])
 	shaders = new Shaders();
 	shaders->SetShaderLoadedCallback(shader_load_callback);
 	shaders->SetUniformsLoadedCallback(uniforms_load_callback);
-	shaders->UpdateResolution(1280, 720);
+	int width;
+	int height;
+	glfwGetFramebufferSize(window, &width, &height);
+	shaders->UpdateResolution(width, height);
 
 	const GLubyte *renderer = glGetString(GL_RENDERER); // get renderer string
 	const GLubyte *version = glGetString(GL_VERSION); // version as a string
@@ -141,7 +143,7 @@ int main(int argc, char* argv[])
 
 		char fps[255];
 		sprintf(fps, "%.1f", ImGui::GetIO().Framerate);
-		glfwSetWindowTitle(window, std::string(".: yolo 0.2.1 @ FPS ").append(fps).append(" :.").data());
+		glfwSetWindowTitle(window, std::string(".: yolo 0.2.2 @ FPS ").append(fps).append(" :.").data());
 
 		shaders->UpdateSpectrum(music.ReadAmplitude());
 		shaders->UpdateUniforms();

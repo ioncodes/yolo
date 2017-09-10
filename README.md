@@ -62,6 +62,6 @@ Get the dependencies, open the solution (I used VS2017), fix the include/lib pat
 I use this command to compile it on my :apple::
 ```bash
 mkdir build
-g++ main.cpp filesystem.cpp keyboard.cpp logger.cpp logmessage.cpp menubar.cpp music.cpp shaders.cpp gl3w.c imgui_draw.cpp imgui_impl_glfw_gl3.cpp imgui.cpp -o build/yolo -framework OpenGl -framework Cocoa -framework CoreVideo -framework AppKit -framework IOKit /usr/local/Cellar/glfw/3.2.1/lib/libglfw3.a ~/Desktop/lib/libnfd_d.a -I/Users/luca/Desktop/include -std=c++11 ~/Desktop/lib/libbass.dylib
+g++ main.cpp filesystem.cpp keyboard.cpp LuaAdapter.cpp logger.cpp logmessage.cpp menubar.cpp music.cpp shaders.cpp gl3w.c imgui_draw.cpp imgui_impl_glfw_gl3.cpp imgui.cpp vm.cpp -o build/yolo -framework OpenGl -framework Cocoa -framework CoreVideo -framework AppKit -framework IOKit /usr/local/Cellar/glfw/3.2.1/lib/libglfw3.a ~/Desktop/lib/libnfd_d.a -I/Users/luca/Desktop/include -std=c++11 /usr/local/Cellar/lua@5.3/5.3.4/lib/liblua.5.3.dylib ~/Desktop/lib/libbass.dylib
 cp ~/Desktop/lib/libbass.dylib ./build/libbass.dylib
 ```
